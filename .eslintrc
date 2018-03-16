@@ -1,0 +1,7 @@
+{
+  "extends": "google",
+  "rules": {},
+  "parserOptions": {
+    "ecmaVersion": 2017
+  }
+}

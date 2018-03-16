@@ -1,0 +1,23 @@
+{
+  "name": "burger-api",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node ./src/bin/www",
+    "migrate": "node ./src/db/migrate"
+  },
+  "dependencies": {
+    "body-parser": "~1.18.2",
+    "bookshelf": "^0.12.1",
+    "bunyan": "^1.8.12",
+    "bunyan-format": "^0.2.1",
+    "express": "~4.15.5",
+    "knex": "^0.13.0",
+    "morgan": "~1.9.0",
+    "mysql": "^2.15.0"
+  },
+  "devDependencies": {
+    "eslint": "^4.18.2",
+    "eslint-config-google": "^0.9.1"
+  }
+}
