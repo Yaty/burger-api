@@ -1,4 +1,4 @@
-const config = require('../../config').db;
+const config = require('../config').db;
 const logger = require('../utils/logger')('database');
 
 const knex = require('knex')({

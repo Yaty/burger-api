@@ -1,14 +1,8 @@
 const {Menu} = require('../models');
+const crud = require('./crud');
 
-/**
- * Find all menus
- * @return {Promise.<[]>}
- */
-async function fetchAll() {
-    return await Menu.fetchAll();
-}
 
 module.exports = {
-    fetchAll,
+    ...crud(Menu),
 };
 

@@ -4,7 +4,7 @@
  * Module dependencies.
  */
 
-const app = require('../../app');
+const app = require('../app');
 const logger = require('../utils/logger')('server');
 const http = require('http');
 
@@ -17,6 +17,7 @@ app.set('port', port);
 
 /**
  * Create HTTP server.
+ * We need it to listen for error events
  */
 
 const server = http.createServer(app);
@@ -66,11 +67,11 @@ function onError(error) {
   // handle specific listen errors with friendly messages
   switch (error.code) {
     case 'EACCES':
-      console.error(bind + ' requires elevated privileges');
+      logger.fatal(bind + ' requires elevated privileges');
       process.exit(1);
       break;
     case 'EADDRINUSE':
-      console.error(bind + ' is already in use');
+      logger.fatal(bind + ' is already in use');
       process.exit(1);
       break;
     default:

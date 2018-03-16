@@ -1,7 +1,7 @@
 const bunyan = require('bunyan');
 const bformat = require('bunyan-format');
 const path = require('path');
-const config = require('../../config').logger;
+const config = require('../config').logger;
 
 module.exports = function(name) {
     return bunyan.createLogger({

@@ -1,8 +1,8 @@
 const express = require('express');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
-const projectInfo = require('./package.json');
-const logger = require('./src/utils/logger')('app');
+const projectInfo = require('../package.json');
+const logger = require('./utils/logger')('app');
 
 const app = express();
 
@@ -18,7 +18,7 @@ app.use(bodyParser.urlencoded({extended: false}));
 // app.use(express.static(path.join(__dirname, 'public')));
 
 const apiVersion = projectInfo.version.split('.')[0];
-app.use('/v' + apiVersion, require('./src/routes'));
+app.use('/v' + apiVersion, require('./routes/index'));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
