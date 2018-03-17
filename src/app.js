@@ -9,7 +9,7 @@ const app = express();
 app.use(morgan('combined', {
   stream: {
     write(message) {
-      logger.info(message.trim());
+        logger.info(message.trim());
     },
   },
 }));

@@ -5,7 +5,6 @@ const mandatoryId = {
     in: 'params',
     errorMessage: 'ID is mandatory',
     isInt: true,
-    toInt: true,
 };
 
 // Those are the default validations which could be overridden
