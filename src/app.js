@@ -18,7 +18,7 @@ app.use(bodyParser.urlencoded({extended: false}));
 // app.use(express.static(path.join(__dirname, 'public')));
 
 const apiVersion = projectInfo.version.split('.')[0];
-app.use('/v' + apiVersion, require('./routes/index'));
+app.use('/v' + apiVersion, require('./routes'));
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
