@@ -1,5 +1,4 @@
 module.exports = function(model) {
-
     /**
      * Find all menus
      * @return {Promise.<[]>}
