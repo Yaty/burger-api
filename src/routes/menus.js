@@ -1,19 +1,11 @@
 const {Menu} = require('../controllers');
-const logger = require('../utils/logger');
+const logger = require('../utils/logger')('menus-router');
 const express = require('express');
 const router = new express.Router();
+const crud = require('./utils/crud');
 
-router.get('/', async (req, res, next) => {
-    try {
-        const res = await Menu.fetchAll();
+const validations = {};
 
-
-
-    } catch (err) {
-        logger.error('Menus get / boum', {err});
-        next(err);
-    }
-    return res.json(await Menu.fetchAll());
-});
+crud(router, Menu, validations, logger);
 
 module.exports = router;
