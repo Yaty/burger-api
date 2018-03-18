@@ -3,8 +3,9 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "start": "node ./src/bin/www",
-    "migrate": "node ./src/db/migrate"
+    "start": "node ./src/bin/www.js",
+    "migrate": "node ./src/db/migrate.js",
+    "test": "nyc mocha test/**/*.js"
   },
   "dependencies": {
     "body-parser": "~1.18.2",
@@ -12,16 +13,20 @@
     "bunyan": "^1.8.12",
     "bunyan-format": "^0.2.1",
     "express": "~4.15.5",
+    "express-validator": "^5.0.3",
     "knex": "^0.13.0",
     "lodash": "^4.17.5",
     "morgan": "~1.9.0",
-    "mysql": "^2.15.0"
+    "mysql": "^2.15.0",
+    "swagger-jsdoc": "^1.9.7",
+    "swagger-ui-express": "^2.0.15"
   },
   "devDependencies": {
     "chai": "^4.1.2",
     "eslint": "^4.18.2",
     "eslint-config-google": "^0.9.1",
     "mocha": "^5.0.4",
+    "nyc": "^11.6.0",
     "supertest": "^3.0.0"
   },
   "engines": {
