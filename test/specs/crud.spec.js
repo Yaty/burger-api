@@ -1,10 +1,9 @@
-const db = require('../../src/db');
 const Model = require('../../src/models/Menu');
 const crud = require('../../src/controllers/crud')(Model);
 
 const {expect} = require('chai');
 
-describe('CRUD', () => {
+describe('CRUD Spec', () => {
     const testData = {
         name: 'test',
     };
@@ -113,6 +112,5 @@ describe('CRUD', () => {
 
     after(async () => {
         await crud.destroyById(testData.id);
-        await db.knex.destroy();
     });
 });
