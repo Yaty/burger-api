@@ -45,8 +45,6 @@ async function launchMigration() {
 async function createUsersTable() {
     return db.knex.schema.createTableIfNotExists('users', function(t) {
         t.increments('id').unique().unsigned().primary();
-        t.foreign('idProductsMenus_Orders')
-            .references('products_menus-orders.ids');
         t.timestamps();
     });
 }
@@ -60,7 +58,6 @@ async function createProductsTable() {
         t.increments('id').unique().unsigned().primary();
         t.string('name').unique().notNullable();
         t.integer('price').unsigned();
-        t.foreign('idProductsMenus').references('products-menus.ids');
         t.timestamps();
     });
 }
@@ -74,7 +71,6 @@ async function createMenusTable() {
         t.increments('id').unique().unsigned().primary();
         t.string('name').unique();
         t.integer('price').unsigned();
-        t.foreign('idProductsMenus').references('products-menus.ids');
         t.timestamps();
     });
 }
@@ -84,12 +80,12 @@ async function createMenusTable() {
  * @return {Promise.<*>}
  */
 async function createProductsMenusTable() {
-    return db.knex.schema.createTableIfNotExists('products-menus', function(t) {
+    return db.knex.schema.createTableIfNotExists('productsMenus', function(t) {
         t.increments('id').unique().unsigned().primary();
         t.foreign('idMenu').references('menus.id');
         t.foreign('idProduct').references('products.id');
-        t.foreign('idProductsMenus_Orders')
-            .references('products_menus-orders.id');
+        t.foreign('idProductsMenusOrders')
+            .references('productsMenusOrders.id');
         t.foreign('idPromotions').references('promotions.id');
         t.timestamps();
     });
@@ -102,8 +98,6 @@ async function createProductsMenusTable() {
 async function createOrdersTable() {
     return db.knex.schema.createTableIfNotExists('orders', function(t) {
         t.increments('id').unique().unsigned().primary();
-        t.foreign('idProductsMenus_Orders')
-            .references('products_menus-orders.ids');
         t.foreign('idUsers').references('users.id');
         t.dateTime('date');
         t.timestamps();
@@ -116,11 +110,10 @@ async function createOrdersTable() {
  */
 async function createProductsMenusOrdersTable() {
     return db.knex.schema
-    .createTableIfNotExists('products_menus-orders', function(t) {
-        t.foreign('idMenusProducts').references('products-menus.ids');
+    .createTableIfNotExists('productsMenusOrders', function(t) {
+        t.increments('id').unique().unsigned().primary();
         t.foreign('idOrders').references('orders.id');
         t.foreign('idPromotions').references('promotions.id');
-        t.increments('id').unique().unsigned().primary();
         t.timestamps();
     });
 }
@@ -136,9 +129,6 @@ async function createPromotionsTable() {
         t.dateTime('dateBegin');
         t.dateTime('dateEnd');
         t.integer('reductionPercentage').unsigned();
-        t.foreign('idMenusProducts').references('products-menus.ids');
-        t.foreign('idProductsMenus_Orders')
-            .references('products_menus-orders.ids');
         t.timestamps();
     });
 }
