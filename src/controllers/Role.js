@@ -1,5 +1,5 @@
 const {Role} = require('../models');
-const crud = require('./crud');
+const crud = require('./utils/crud');
 
 module.exports = {
     ...crud(Role),

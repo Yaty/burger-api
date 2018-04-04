@@ -1,6 +1,6 @@
 const {User} = require('../models');
 const AccessToken = require('./AccessToken');
-const crud = require('./crud');
+const crud = require('./utils/crud');
 const bcrypt = require('./utils/bcrypt');
 const _ = require('lodash');
 const errors = require('./utils/errors');

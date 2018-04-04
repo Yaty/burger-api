@@ -1,5 +1,5 @@
 const Model = require('../../src/models/Menu');
-const crud = require('../../src/controllers/crud')(Model);
+const crud = require('../../src/controllers/utils/crud')(Model);
 const app = require('../../src/app');
 const {expect} = require('chai');
 const supertest = require('supertest');
