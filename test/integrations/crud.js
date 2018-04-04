@@ -5,6 +5,7 @@ const {expect} = require('chai');
 const supertest = require('supertest');
 const api = supertest(app);
 const BASE_URL = '/v' + require('../../package.json').version.split('.')[0];
+const {uuid} = require('../utils');
 
 const buildUrl = (url) => BASE_URL + url;
 
@@ -24,7 +25,8 @@ describe('CRUD Integrations', () => {
 
     describe('Find by ID', () => {
         const data = {
-            name: 'integrationTest',
+            name: uuid(),
+            price: 50,
         };
 
         before(async () => {
@@ -55,16 +57,19 @@ describe('CRUD Integrations', () => {
 
     describe('Create', () => {
         it('should create an instance', (done) => {
+            const name = uuid();
+
             api.post(buildUrl('/menus'))
                 .send({
-                    name: 'testCreate',
+                    name,
+                    price: 50,
                 })
                 .expect(201)
                 .end((err, res) => {
                     if (err) return done(err);
                     expect(res.body).to.be.an('object');
                     expect(res.body).to.have.property('id');
-                    expect(res.body.name).to.be.equal('testCreate');
+                    expect(res.body.name).to.be.equal(name);
                     done();
                 });
         });
@@ -72,7 +77,8 @@ describe('CRUD Integrations', () => {
 
     describe('Update properties', () => {
         const data = {
-            name: 'updateProp',
+            name: uuid(),
+            price: 50,
         };
 
         before(async () => {
@@ -80,17 +86,19 @@ describe('CRUD Integrations', () => {
             data.id = id;
         });
 
+        const name = uuid();
+
         it('should update an instance', (done) => {
             api.patch(buildUrl('/menus/' + data.id))
                 .send({
-                    name: 'testUpdate',
+                    name,
                 })
                 .expect(200)
                 .end((err, res) => {
                     if (err) return done(err);
                     expect(res.body).to.be.an('object');
                     expect(res.body).to.have.property('id');
-                    expect(res.body.name).to.be.equal('testUpdate');
+                    expect(res.body.name).to.be.equal(name);
                     done();
                 });
         });
@@ -103,7 +111,8 @@ describe('CRUD Integrations', () => {
     describe('Update', () => {
         describe('Update properties', () => {
             const data = {
-                name: 'updateProp',
+                name: uuid(),
+                price: 50,
             };
 
             before(async () => {
@@ -111,17 +120,19 @@ describe('CRUD Integrations', () => {
                 data.id = id;
             });
 
+            const name = uuid();
+
             it('should update an instance', (done) => {
                 api.put(buildUrl('/menus/' + data.id))
                     .send({
-                        name: 'testUpdate',
+                        name,
                     })
                     .expect(200)
                     .end((err, res) => {
                         if (err) return done(err);
                         expect(res.body).to.be.an('object');
                         expect(res.body).to.have.property('id');
-                        expect(res.body.name).to.be.equal('testUpdate');
+                        expect(res.body.name).to.be.equal(name);
                         done();
                     });
             });
@@ -134,7 +145,8 @@ describe('CRUD Integrations', () => {
 
     describe('Delete', () => {
         const data = {
-            name: 'willBeDeleted',
+            name: uuid(),
+            price: 50,
         };
 
         before(async () => {
@@ -155,7 +167,8 @@ describe('CRUD Integrations', () => {
 
     describe('Exists', () => {
         const data = {
-            name: 'exists',
+            name: uuid(),
+            price: 49,
         };
 
         before(async () => {

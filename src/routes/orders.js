@@ -5,7 +5,15 @@ const router = new express.Router();
 const crud = require('./utils/crud');
 
 const validations = {};
+const accessControl = {};
 
-crud(router, Order, validations, logger);
+
+crud({
+    router,
+    model: Order,
+    accessControl,
+    validations,
+    logger,
+});
 
 module.exports = router;

@@ -3,132 +3,152 @@
  * It should only be called by hand
  */
 
-const logger = require('../utils/logger')('migrate');
+module.exports = async function(db) {
+    const createTable = async (t, cb) => {
+        if (await db.knex.schema.hasTable(t)) return;
+        return await db.knex.schema.createTable(t, cb);
+    };
 
-if (require.main !== module) { // https://nodejs.org/docs/latest/api/all.html#modules_accessing_the_main_module
-    logger.fatal('You should not require this file.');
-    process.exit(1);
-}
+    // Main tables
+    await createUserTable();
+    await createProductTable();
+    await createMenuTable();
+    await createOrderTable();
+    await createRoleTable();
+    await createAccessTokenTable();
 
-const db = require('./index');
+    // Liaison tables
+    await createProductMenuTable();
+    await createOrderProductTable();
+    await createOrderMenuTable();
+    await createRoleMappingTable();
 
-launchMigration()
-    .then(() => {
-        logger.info('Migration success !');
-        process.exit(1);
-    })
-    .catch((err) => logger.error('Error while migrating.', {err}));
+    // TODO : init application data (create roles (admin, ...), then create admin)
 
-/**
- * Create tables
- */
-async function launchMigration() {
-    await createUsersTable();
-    await createProductsTable();
-    await createMenusTable();
-    await createProductsMenusTable();
-    await createOrdersTable();
-    await createProductsMenusOrdersTable();
-    await createPromotionsTable();
-}
+    /**
+     * Create users table
+     * @return {Promise<*>}
+     */
+    async function createUserTable() {
+        return await createTable('User', (t) => {
+            t.increments('id').primary();
+            t.string('firstName');
+            t.string('lastName');
+            t.string('email').unique().notNullable();
+            t.string('password').notNullable();
+            t.timestamps();
+        });
+    }
 
-/**
- * Create users table
- * Champ who can be ad for connected user:
- * t.string('first_name').defaultTo('Mr.');
- * t.string('last_name').defaultTo('Meeseeks');
- * t.string('email');
- * t.string('password').notNullable();
- * t.integer('reduceToken').unsigned();
- * @return {Promise.<*>}
- */
-async function createUsersTable() {
-    return db.knex.schema.createTableIfNotExists('users', function(t) {
-        t.increments('id').unique().unsigned().primary();
-        t.timestamps();
-    });
-}
+    /**
+     * Create products table
+     * @return {Promise.<*>}
+     */
+    async function createProductTable() {
+        return await createTable('Product', (t) => {
+            t.increments('id').primary();
+            t.string('name').unique().notNullable();
+            t.integer('price').unsigned().notNullable();
+            t.timestamps();
+        });
+    }
 
-/**
- * Create products table
- * @return {Promise.<*>}
- */
-async function createProductsTable() {
-    return db.knex.schema.createTableIfNotExists('products', function(t) {
-        t.increments('id').unique().unsigned().primary();
-        t.string('name').unique().notNullable();
-        t.integer('price').unsigned();
-        t.timestamps();
-    });
-}
+    /**
+     * Create menus table
+     * @return {Promise.<*>}
+     */
+    async function createMenuTable() {
+        return await createTable('Menu', (t) => {
+            t.increments('id').primary();
+            t.string('name').unique().notNullable();
+            t.integer('price').unsigned().notNullable();
+            t.timestamps();
+        });
+    }
 
-/**
- * Create menus table
- * @return {Promise.<*>}
- */
-async function createMenusTable() {
-    return db.knex.schema.createTableIfNotExists('menus', function(t) {
-        t.increments('id').unique().unsigned().primary();
-        t.string('name').unique();
-        t.integer('price').unsigned();
-        t.timestamps();
-    });
-}
+    /**
+     * Create orders table
+     * @return {Promise.<*>}
+     */
+    async function createOrderTable() {
+        return await createTable('Order', (t) => {
+            t.increments('id').primary();
+            t.integer('price').unsigned().notNullable();
+            t.integer('userId').unsigned().references('User.id');
+            t.timestamps();
+        });
+    }
 
-/**
- * Create orders products-menus (associative)
- * @return {Promise.<*>}
- */
-async function createProductsMenusTable() {
-    return db.knex.schema.createTableIfNotExists('productsMenus', function(t) {
-        t.increments('id').unique().unsigned().primary();
-        t.foreign('idMenu').references('menus.id');
-        t.foreign('idProduct').references('products.id');
-        t.foreign('idProductsMenusOrders')
-            .references('productsMenusOrders.id');
-        t.foreign('idPromotions').references('promotions.id');
-        t.timestamps();
-    });
-}
+    /**
+     * Create role table
+     * @return {Promise.<*>}
+     */
+    async function createRoleTable() {
+        return await createTable('Role', (t) => {
+            t.increments('id').primary();
+            t.string('name').unique().notNullable();
+            t.timestamps();
+        });
+    }
 
-/**
- * Create orders table
- * @return {Promise.<*>}
- */
-async function createOrdersTable() {
-    return db.knex.schema.createTableIfNotExists('orders', function(t) {
-        t.increments('id').unique().unsigned().primary();
-        t.foreign('idUsers').references('users.id');
-        t.dateTime('date');
-        t.timestamps();
-    });
-}
+    /**
+     * Create AccessToken table
+     * @return {Promise.<*>}
+     */
+    async function createAccessTokenTable() {
+        return await createTable('AccessToken', (t) => {
+            t.uuid('id').primary();
+            t.integer('ttl').unsigned();
+            t.integer('userId').unsigned().references('User.id');
+            t.timestamps();
+        });
+    }
 
-/**
- * Create orders products_menus-orders (associative)
- * @return {Promise.<*>}
- */
-async function createProductsMenusOrdersTable() {
-    return db.knex.schema
-    .createTableIfNotExists('productsMenusOrders', function(t) {
-        t.increments('id').unique().unsigned().primary();
-        t.foreign('idOrders').references('orders.id');
-        t.foreign('idPromotions').references('promotions.id');
-        t.timestamps();
-    });
-}
+    /**
+     * Create ProductMenu table
+     * @return {Promise.<*>}
+     */
+    async function createProductMenuTable() {
+        return await createTable('ProductMenu', (t) => {
+            t.integer('productId').unsigned().references('Product.id');
+            t.integer('menuId').unsigned().references('Menu.id');
+            t.timestamps();
+        });
+    }
 
-/**
- * Create promotions table
- * @return {Promise.<*>}
- */
-async function createPromotionsTable() {
-    return db.knex.schema.createTableIfNotExists('promotions', function(t) {
-        t.increments('id').unique().unsigned().primary();
-        t.string('name');
-        t.dateTime('dateBegin');
-        t.dateTime('dateEnd');
-        t.integer('reductionPercentage').unsigned();
-        t.timestamps();
-    });
-}
+    /**
+     * Create OrderProduct table
+     * @return {Promise.<*>}
+     */
+    async function createOrderProductTable() {
+        return await createTable('OrderProduct', (t) => {
+            t.integer('orderId').unsigned().references('Order.id');
+            t.integer('productId').unsigned().references('Product.id');
+            t.timestamps();
+        });
+    }
+
+    /**
+     * Create Order Menu table
+     * @return {Promise.<*>}
+     */
+    async function createOrderMenuTable() {
+        return await createTable('OrderMenu', (t) => {
+            t.integer('orderId').unsigned().references('Order.id');
+            t.integer('menuId').unsigned().references('Menu.id');
+            t.timestamps();
+        });
+    }
+
+    /**
+     * Create RoleMapping tale
+     * @return {Promise.<*>}
+     */
+    async function createRoleMappingTable() {
+        return await createTable('RoleMapping', (t) => {
+            t.integer('roleId').unsigned().references('Role.id');
+            t.integer('userId').unsigned().references('User.id');
+            t.timestamps();
+        });
+    }
+};
