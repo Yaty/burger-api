@@ -18,14 +18,5 @@ module.exports = db.Model.extend({
             'orderId',
         );
     },
-    currentPrice: function() {
-        const truePrice = this.get('price') - this.get('reductionCost');
-        return truePrice <= 0 ? truePrice : 0;
-    },
-    askForReduction: function(userCategory) {
-        switch (userCategory) {
-
-        }
-    },
 });
 

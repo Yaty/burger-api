@@ -3,7 +3,7 @@ const AccessToken = require('./AccessToken');
 const crud = require('./utils/crud');
 const bcrypt = require('./utils/bcrypt');
 const _ = require('lodash');
-const errors = require('./utils/errors');
+const errors = require('../utils/errors');
 
 /**
  * Find a data by it's ID
@@ -31,14 +31,15 @@ module.exports = {
         await AccessToken.destroyById(token);
     },
     async login(email, password) {
-        const instance = await fetchByEmail(email);
+        const instance = await fetchByEmail(email, false);
         if (_.isNil(instance)) throw errors.notFound();
+        const instanceJSON = instance.toJSON({visibility: false});
 
-        const isValidPasssword = await bcrypt.compare(password, instance.password);
+        const isValidPasssword = await bcrypt.compare(password, instanceJSON.password);
         if (!isValidPasssword) throw errors.loginFailed();
 
         return await AccessToken.create({
-            userId: instance.id,
+            userId: instanceJSON.id,
             ttl: 1209600, // 2 weeks
         });
     },
@@ -47,12 +48,6 @@ module.exports = {
             data.password = await bcrypt.hash(data.password);
         }
 
-        const createdUser = await crudMethods.create(data);
-
-        if (_.isObject(createdUser) && !_.isNil(createdUser.password)) {
-            delete createdUser.password;
-        }
-
-        return createdUser;
+        return await crudMethods.create(data);
     },
 };

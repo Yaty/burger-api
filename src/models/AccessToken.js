@@ -11,10 +11,9 @@ module.exports = db.Model.extend({
     },
     isValid() {
         const now = new Date();
-        const created = new Date(this.get('created_at'));
-        const ttl = this.get('ttl');
-        const tokenLimitDate = created + ttl;
-        return tokenLimitDate < now;
+        const tokenLimitDate = new Date(this.get('created_at'));
+        tokenLimitDate.setSeconds(tokenLimitDate.getSeconds() + this.get('ttl'));
+        return tokenLimitDate > now;
     },
 });
 

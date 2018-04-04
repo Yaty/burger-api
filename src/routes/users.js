@@ -7,7 +7,16 @@ const auth = require('./middlewares/auth');
 const {checkSchema} = require('express-validator/check');
 
 const validations = {};
-const accessControl = {};
+const accessControl = {
+    find: auth.ifAdmin,
+    findById: auth.ifOwner,
+    create: auth.ifAnyone,
+    patch: auth.ifOwner,
+    update: auth.ifOwner,
+    delete: auth.ifOwner,
+    exists: auth.ifAdmin,
+    count: auth.ifAdmin,
+};
 
 crud({
     router,

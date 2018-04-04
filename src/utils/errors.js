@@ -22,4 +22,7 @@ module.exports = {
     logoutFailed() {
         return factory('Logout failed', 'LOGOUT_FAILED', 401);
     },
+    unauthorized() {
+        return factory('Unauthorized', 'UNAUTHORIZED', 401);
+    },
 };

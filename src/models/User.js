@@ -2,6 +2,7 @@ const db = require('../db');
 
 module.exports = db.Model.extend({
     tableName: 'User',
+    hidden: ['password'],
     orders() {
         return this.hasMany(
             require('./Order'),
