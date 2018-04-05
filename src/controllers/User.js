@@ -50,4 +50,11 @@ module.exports = {
 
         return await crudMethods.create(data);
     },
+    async updateById(id, data) {
+        if (_.isObject(data) && _.isString(data.password)) {
+            data.password = await bcrypt.hash(data.password);
+        }
+
+        return await crudMethods.updateById(id, data);
+    },
 };

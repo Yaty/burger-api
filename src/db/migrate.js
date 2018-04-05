@@ -23,7 +23,9 @@ module.exports = async function(db) {
     await createOrderMenuTable();
     await createRoleMappingTable();
 
-    // TODO : init application data (create roles (admin, ...), then create admin)
+    // Init application data
+    await createRoles();
+    await createAdmin();
 
     /**
      * Create users table
@@ -150,5 +152,30 @@ module.exports = async function(db) {
             t.integer('userId').unsigned().references('User.id');
             t.timestamps();
         });
+    }
+
+    /**
+     * Create roles
+     */
+    async function createRoles() {
+        // TODO
+        /*
+         1. require Role dans les controllers dans ce fichier
+         2.  checker si les roles existent
+         3. s'il un role n'existe pas alors le creer avec la fonction exists
+         4. pour le creer ça sera await Role.create({name: '...'})
+         */
+    }
+
+    /**
+     * Create admin
+     */
+    async function createAdmin() {
+        // TODO
+        /*
+        1. require User des controllers
+        2. checker si l'admin existe pas déjà avec exists
+        3. si non utiliser create puis attribuer le role admin a cette user, utiliser les données provenant du fichier config qui va pomper ça depuis les variables d'env
+         */
     }
 };
