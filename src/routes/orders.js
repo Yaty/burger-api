@@ -7,14 +7,14 @@ const auth = require('./middlewares/auth');
 
 const validations = {};
 const accessControl = {
-    find: auth.ifAdmin,
-    findById: auth.ifOwner,
-    create: auth.ifAnyone,
-    patch: auth.ifAdmin,
-    update: auth.ifAdmin,
-    delete: auth.ifAdmin,
-    exists: auth.ifAdmin,
-    count: auth.ifAdmin,
+    find: auth.ifAdmin(),
+    findById: auth.ifOwner(),
+    create: auth.ifAnyone(),
+    patch: auth.ifAdmin(),
+    update: auth.ifAdmin(),
+    delete: auth.ifAdmin(),
+    exists: auth.ifAdmin(),
+    count: auth.ifAdmin(),
 };
 
 crud({

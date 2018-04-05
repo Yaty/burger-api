@@ -2,51 +2,7 @@ const _ = require('lodash');
 const {checkSchema} = require('express-validator/check');
 const auth = require('../middlewares/auth');
 
-const mandatoryId = {
-    in: 'params',
-    errorMessage: 'ID is mandatory',
-    isInt: true,
-};
-
-// Those are the default validations which could be overridden
-let routerValidations = {
-    find: {},
-    findById: {
-        id: mandatoryId,
-    },
-    create: {},
-    patch: {
-        id: mandatoryId,
-    },
-    update: {
-        id: mandatoryId,
-    },
-    delete: {
-        id: mandatoryId,
-    },
-    exists: {
-        id: mandatoryId,
-    },
-    count: {},
-};
-
-let routerAccessControl = { // by default we are protecting our routes
-    find: auth.ifAdmin,
-    findById: auth.ifAdmin,
-    create: auth.ifAdmin,
-    patch: auth.ifAdmin,
-    update: auth.ifAdmin,
-    delete: auth.ifAdmin,
-    exists: auth.ifAdmin,
-    count: auth.ifAdmin,
-};
-
-
 module.exports = function({router, model, validations = {}, accessControl = {}, logger}) {
-    // merge the two objects
-    Object.assign(routerValidations, validations);
-    Object.assign(routerAccessControl, accessControl);
-
     // This function will not work properly with bad input
     if (!_.isFunction(router) || !_.isObject(model) || !_.isObject(logger)) {
         const msg = 'CRUD utils needs to have a router, a model, a logger.';
@@ -57,8 +13,47 @@ module.exports = function({router, model, validations = {}, accessControl = {}, 
             console.error(msg, router, model, logger);
         }
 
-        process.exit(1);
+        process.exit(0);
     }
+
+    const mandatoryId = {
+        in: 'params',
+        errorMessage: 'ID is mandatory',
+        isInt: true,
+    };
+
+    // Those are the default validations which could be overridden
+    const routerValidations = _.merge({
+        find: {},
+        findById: {
+            id: mandatoryId,
+        },
+        create: {},
+        patch: {
+            id: mandatoryId,
+        },
+        update: {
+            id: mandatoryId,
+        },
+        delete: {
+            id: mandatoryId,
+        },
+        exists: {
+            id: mandatoryId,
+        },
+        count: {},
+    }, validations);
+
+    const routerAccessControl = _.merge({
+        find: auth.ifAnyone(),
+        findById: auth.ifAnyone(),
+        create: auth.ifAnyone(),
+        patch: auth.ifAnyone(),
+        update: auth.ifAnyone(),
+        delete: auth.ifAnyone(),
+        exists: auth.ifAnyone(),
+        count: auth.ifAnyone(),
+    }, accessControl);
 
     /**
      * @swagger
