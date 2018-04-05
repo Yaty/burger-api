@@ -40,13 +40,17 @@ module.exports = function(model) {
     /**
      * Destroy by ID
      * @param {String} id
+     * @return {Boolean} destroyed
      */
     async function destroyById(id) {
         const item = await fetchById(id, false);
 
         if (!_.isNil(item)) {
             await item.destroy();
+            return true;
         }
+
+        return false;
     }
 
     /**
@@ -56,8 +60,13 @@ module.exports = function(model) {
      * @return {Promise.<Object>}
      */
     async function create(data, json = true) {
-        const res = await model.forge(data).save();
-        return json === true ? res.toJSON() : res;
+        if (_.isObject(data)) {
+            data.created_at = new Date();
+            const res = await model.forge(data).save();
+            return json === true ? res.toJSON() : res;
+        }
+
+        return undefined;
     }
 
     /**
@@ -83,7 +92,8 @@ module.exports = function(model) {
     async function updateById(id, data, json = true) {
         const item = await fetchById(id, false);
 
-        if (!_.isNil(item)) {
+        if (!_.isNil(item) && _.isObject(data)) {
+            data.updated_at = new Date();
             const updated = await item.save(data, {patch: true});
             return json === true ? updated.toJSON() : updated;
         }

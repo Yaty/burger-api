@@ -1,11 +1,12 @@
 const Model = require('../../src/models/Menu');
-const crud = require('../../src/controllers/crud')(Model);
-
+const crud = require('../../src/controllers/utils/crud')(Model);
+const {uuid} = require('../utils');
 const {expect} = require('chai');
 
 describe('CRUD Spec', () => {
     const testData = {
-        name: 'test',
+        name: uuid(),
+        price: 50,
     };
 
     before(async () => {
@@ -23,7 +24,8 @@ describe('CRUD Spec', () => {
 
     describe('create', () => {
         const data = {
-            name: 'testCreate',
+            name: uuid(),
+            price: 50,
         };
 
         it('should create properly', async () => {
@@ -40,7 +42,8 @@ describe('CRUD Spec', () => {
 
     describe('destroyById', () => {
         const data = {
-            name: 'testDestroy',
+            name: uuid(),
+            price: 50,
         };
 
         before(async () => {
@@ -50,7 +53,7 @@ describe('CRUD Spec', () => {
 
         it('should destroy properly', async () => {
             const res = await crud.destroyById(data.id);
-            expect(res).to.be.an('undefined');
+            expect(res).to.be.equal(true);
         });
     });
 
@@ -90,20 +93,21 @@ describe('CRUD Spec', () => {
 
     describe('updateById', () => {
         it('should update a defined item', async () => {
+            const name = uuid();
             const updated = await crud.updateById(testData.id, {
-                name: 'updatedName',
+                name,
             });
 
             expect(updated).to.be.an('object');
             expect(updated).to.have.property('id');
             expect(updated.id).to.be.equal(testData.id);
             expect(updated).to.have.property('name');
-            expect(updated.name).to.be.equal('updatedName');
+            expect(updated.name).to.be.equal(name);
         });
 
         it('should not update an undefined item', async () => {
             const updated = await crud.updateById(500000, {
-                name: 'updatedName',
+                name: uuid(),
             });
 
             expect(updated).to.be.an('undefined');

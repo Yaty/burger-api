@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const {checkSchema} = require('express-validator/check');
+const auth = require('../middlewares/auth');
 
 const mandatoryId = {
     in: 'params',
@@ -29,9 +30,22 @@ let routerValidations = {
     count: {},
 };
 
-module.exports = function(router, model, validations = {}, logger) {
+let routerAccessControl = { // by default we are protecting our routes
+    find: auth.ifAdmin,
+    findById: auth.ifAdmin,
+    create: auth.ifAdmin,
+    patch: auth.ifAdmin,
+    update: auth.ifAdmin,
+    delete: auth.ifAdmin,
+    exists: auth.ifAdmin,
+    count: auth.ifAdmin,
+};
+
+
+module.exports = function({router, model, validations = {}, accessControl = {}, logger}) {
     // merge the two objects
-    routerValidations = Object.assign(routerValidations, validations);
+    Object.assign(routerValidations, validations);
+    Object.assign(routerAccessControl, accessControl);
 
     // This function will not work properly with bad input
     if (!_.isFunction(router) || !_.isObject(model) || !_.isObject(logger)) {
@@ -67,12 +81,11 @@ module.exports = function(router, model, validations = {}, logger) {
      *           items:
      *             type: object
      */
-    router.get('/', checkSchema(routerValidations.find),
+    router.get('/', routerAccessControl.find, checkSchema(routerValidations.find),
         async (req, res, next) => {
             try {
                 return res.json(await model.fetchAll());
             } catch (err) {
-                logger.error('Error while fetching all data.', {err});
                 next(err);
             }
         });
@@ -98,14 +111,13 @@ module.exports = function(router, model, validations = {}, logger) {
      *           properties:
      *             count: number
      */
-    router.get('/count', checkSchema(routerValidations.count),
+    router.get('/count', routerAccessControl.count, checkSchema(routerValidations.count),
         async (req, res, next) => {
             try {
                 const where = req.body.where || {};
                 const count = await model.count(where);
                 return res.json({count});
             } catch (err) {
-                logger.error('Error while counting.', {err});
                 next(err);
             }
         });
@@ -136,7 +148,7 @@ module.exports = function(router, model, validations = {}, logger) {
      *       404:
      *         description: Not found
      */
-    router.get('/:id', checkSchema(routerValidations.findById),
+    router.get('/:id', routerAccessControl.findById, checkSchema(routerValidations.findById),
         async (req, res, next) => {
             try {
                 const id = req.params.id;
@@ -148,7 +160,6 @@ module.exports = function(router, model, validations = {}, logger) {
 
                 return res.sendStatus(404);
             } catch (err) {
-                logger.error('Error while fetching data.', {err});
                 next(err);
             }
         });
@@ -175,12 +186,11 @@ module.exports = function(router, model, validations = {}, logger) {
      *         schema:
      *           type: object
      */
-    router.post('/', checkSchema(routerValidations.create),
+    router.post('/', routerAccessControl.create, checkSchema(routerValidations.create),
         async (req, res, next) => {
             try {
                 return res.status(201).json(await model.create(req.body));
             } catch (err) {
-                logger.error('Error while creating data.', {err});
                 next(err);
             }
         });
@@ -228,12 +238,11 @@ module.exports = function(router, model, validations = {}, logger) {
      *       404:
      *         description: Not found
      */
-    router.patch('/:id', checkSchema(routerValidations.patch),
+    router.patch('/:id', routerAccessControl.patch, checkSchema(routerValidations.patch),
         async (req, res, next) => {
             try {
                 await update(res, req.params.id, req.body);
             } catch (err) {
-                logger.error('Error while updating attributes.', {err});
                 next(err);
             }
         });
@@ -264,12 +273,11 @@ module.exports = function(router, model, validations = {}, logger) {
      *       404:
      *         description: Not found
      */
-    router.put('/:id', checkSchema(routerValidations.update),
+    router.put('/:id', routerAccessControl.update, checkSchema(routerValidations.update),
         async (req, res, next) => {
             try {
                 await update(res, req.params.id, req.body);
             } catch (err) {
-                logger.error('Error while updating model.', {err});
                 next(err);
             }
         });
@@ -296,14 +304,13 @@ module.exports = function(router, model, validations = {}, logger) {
      *       404:
      *         description: The instance is not found
      */
-    router.head('/:id', checkSchema(routerValidations.exists),
+    router.head('/:id', routerAccessControl.exists, checkSchema(routerValidations.exists),
         async (req, res, next) => {
             try {
                 const id = req.params.id;
                 const exists = await model.exists(id);
                 return res.sendStatus(exists ? 200 : 404);
             } catch (err) {
-                logger.error('Error while checking existence.', {err});
                 next(err);
             }
         });
@@ -330,14 +337,14 @@ module.exports = function(router, model, validations = {}, logger) {
      *       404:
      *         description: Not found
      */
-    router.delete('/:id', checkSchema(routerValidations.delete),
+    router.delete('/:id', routerAccessControl.delete, checkSchema(routerValidations.delete),
         async (req, res, next) => {
             try {
                 const id = req.params.id;
-                await model.destroyById(id);
-                return res.sendStatus(204);
+                const destroyed = await model.destroyById(id);
+                if (destroyed) return res.sendStatus(204);
+                return res.sendStatus(404);
             } catch (err) {
-                logger.error('Error while deleting data.', {err});
                 next(err);
             }
         });

@@ -1,6 +1,7 @@
-const {Menu} = require('../models');
+const {Role} = require('../models');
 const crud = require('./utils/crud');
 
 module.exports = {
-    ...crud(Menu),
+    ...crud(Role),
 };
+

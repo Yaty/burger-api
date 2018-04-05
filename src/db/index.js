@@ -1,5 +1,6 @@
 const config = require('../config').db;
 const logger = require('../utils/logger')('database');
+const migrate = require('./migrate');
 
 const knex = require('knex')({
     client: 'mysql',
@@ -16,11 +17,14 @@ const knex = require('knex')({
     },
 });
 
+const db = module.exports = require('bookshelf')(knex);
+db.plugin(require('bookshelf-uuid'));
+db.plugin('visibility');
+
 knex.raw('select 1+1 as result')
     .then(() => logger.info('Database connected.'))
+    .then(() => migrate(db))
     .catch((err) => {
         logger.fatal('Error while connecting to the database.', {err});
         process.exit(1);
     });
-
-module.exports = require('bookshelf')(knex);
