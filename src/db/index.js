@@ -24,7 +24,8 @@ db.plugin('visibility');
 knex.raw('select 1+1 as result')
     .then(() => logger.info('Database connected.'))
     .then(() => migrate(db))
+    .then(() => logger.info('Database migrated.'))
     .catch((err) => {
         logger.fatal('Error while connecting to the database.', {err});
-        process.exit(1);
+        process.exit(0);
     });

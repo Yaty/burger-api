@@ -1,9 +1,8 @@
-/**
- * This file is creating tables
- * It should only be called by hand
- */
+const config = require('../config');
 
 module.exports = async function(db) {
+    const {User, Role} = require('../controllers');
+
     const createTable = async (t, cb) => {
         if (await db.knex.schema.hasTable(t)) return;
         return await db.knex.schema.createTable(t, cb);
@@ -63,7 +62,6 @@ module.exports = async function(db) {
         return await createTable('Menu', (t) => {
             t.increments('id').primary();
             t.string('name').unique().notNullable();
-            t.integer('price').unsigned().notNullable();
             t.timestamps();
         });
     }
@@ -158,24 +156,32 @@ module.exports = async function(db) {
      * Create roles
      */
     async function createRoles() {
-        // TODO
-        /*
-         1. require Role dans les controllers dans ce fichier
-         2.  checker si les roles existent
-         3. s'il un role n'existe pas alors le creer avec la fonction exists
-         4. pour le creer ça sera await Role.create({name: '...'})
-         */
+        const roles = ['admin'];
+
+        for (const role of roles) {
+            const exists = await Role.exists({
+                name: role,
+            });
+
+            if (exists) continue;
+
+            await Role.create({
+                name: role,
+                created_at: new Date(),
+            });
+        }
     }
 
     /**
      * Create admin
      */
     async function createAdmin() {
-        // TODO
-        /*
-        1. require User des controllers
-        2. checker si l'admin existe pas déjà avec exists
-        3. si non utiliser create puis attribuer le role admin a cette user, utiliser les données provenant du fichier config qui va pomper ça depuis les variables d'env
-         */
+        const adminExists = await User.exists({email: config.admin.email});
+        if (adminExists) return;
+
+        const {id} = await User.create(Object.assign({created_at: new Date()}, config.admin));
+        const roles = await Role.fetchAll({name: 'admin'}, false);
+        const adminRole = roles.models[0];
+        await adminRole.users().attach(id);
     }
 };
