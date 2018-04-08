@@ -293,4 +293,40 @@ describe('User Integrations', () => {
                 });
         });
     });
+
+    describe('Logout', () => {
+        const data = {
+            email: uuid() + '@qfsdfs.fr',
+            password: uuid(),
+        };
+
+        let token;
+
+        before((done) => {
+            UserCRUD.create(JSON.parse(JSON.stringify(data)))
+                .then(() => {
+                    api.post(buildUrl('/users/login'))
+                        .send({
+                            email: data.email,
+                            password: data.password,
+                        })
+                        .expect(200)
+                        .end((err, res) => {
+                            if (err) return done(err);
+                            token = res.body.id;
+                            done();
+                        });
+                });
+        });
+
+       it('should logout', (done) => {
+           api.post(buildUrl('/users/logout'))
+               .auth(token, {type: 'bearer'})
+               .expect(204)
+               .end((err) => {
+                   if (err) return done(err);
+                   done();
+               });
+       });
+    });
 });
