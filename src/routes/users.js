@@ -4,7 +4,8 @@ const express = require('express');
 const router = new express.Router();
 const crud = require('./utils/crud');
 const auth = require('./middlewares/auth');
-const {checkSchema} = require('express-validator/check');
+const validate = require('express-validation');
+const Joi = require('joi');
 
 const validations = {};
 const accessControl = {
@@ -26,16 +27,12 @@ crud({
     logger,
 });
 
-const loginValidation = checkSchema({
-    email: {
-        in: 'body',
-        errorMessage: 'email is mandatory',
+const loginValidation = {
+    body: {
+        email: Joi.string().email().required(),
+        password: Joi.string().required(),
     },
-    password: {
-        in: 'body',
-        errorMessage: 'password is mandatory',
-    },
-});
+};
 
 /**
  * @swagger
@@ -71,7 +68,7 @@ const loginValidation = checkSchema({
  *       401:
  *         description: Login failed
  */
-router.post('/login', auth.ifUnauthenticated(), loginValidation, async (req, res, next) => {
+router.post('/login', auth.ifUnauthenticated(), validate(loginValidation), async (req, res, next) => {
         try {
             return res.json(await User.login(req.body.email, req.body.password));
         } catch (err) {

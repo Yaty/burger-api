@@ -16,10 +16,11 @@ module.exports = function(model) {
      * Find a data by it's ID
      * @param {String} id
      * @param {Boolean} json
+     * @param {Object} options
      * @return {Object|Model}
      */
-    async function fetchById(id, json = true) {
-        const item = await model.forge({id}).fetch();
+    async function fetchById(id, json = true, options) {
+        const item = await model.forge({id}).fetch(options);
 
         if (!_.isNil(item)) {
             return json === true ? item.toJSON() : item;

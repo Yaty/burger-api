@@ -179,9 +179,7 @@ module.exports = async function(db) {
         const adminExists = await User.exists({email: config.admin.email});
         if (adminExists) return;
 
-        const {id} = await User.create(Object.assign({created_at: new Date()}, config.admin));
-        const roles = await Role.fetchAll({name: 'admin'}, false);
-        const adminRole = roles.models[0];
-        await adminRole.users().attach(id);
+        const user = await User.create(Object.assign({created_at: new Date()}, config.admin), false);
+        await user.roles().attach(user.id);
     }
 };

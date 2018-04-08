@@ -19,12 +19,12 @@ module.exports = async function(req, res, next) {
             if (_.isNil(tokenInstance) || !tokenInstance.isValid()) return next(errors.unauthorized());
             res.locals.token = tokenInstance.toJSON();
 
-            const userInstance = await User.fetchById(res.locals.token.userId, false);
+            const userInstance = await User.fetchById(res.locals.token.userId, false, {withRelated: ['roles']});
             if (_.isNil(userInstance)) return next(errors.unauthorized());
 
             res.locals.roles.push('authenticated');
             res.locals.user = userInstance.toJSON();
-            res.locals.roles.push(...userInstance.roles().map((r) => r.name.toLowerCase()));
+            res.locals.roles.push(...res.locals.user.roles.map((r) => r.name.toLowerCase()));
         }
 
         return next();

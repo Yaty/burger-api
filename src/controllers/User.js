@@ -43,18 +43,18 @@ module.exports = {
             ttl: 1209600, // 2 weeks
         });
     },
-    async create(data) { // overwrite crud to hash password
+    async create(data, json) { // overwrite crud to hash password
         if (_.isObject(data) && _.isString(data.password)) {
             data.password = await bcrypt.hash(data.password);
         }
 
-        return await crudMethods.create(data);
+        return await crudMethods.create(data, json);
     },
-    async updateById(id, data) {
+    async updateById(id, data, json) {
         if (_.isObject(data) && _.isString(data.password)) {
             data.password = await bcrypt.hash(data.password);
         }
 
-        return await crudMethods.updateById(id, data);
+        return await crudMethods.updateById(id, data, json);
     },
 };

@@ -1,41 +1,74 @@
-const Model = require('../../src/models/Menu');
-const crud = require('../../src/controllers/utils/crud')(Model);
-const app = require('../../src/app');
+const _ = require('lodash');
 const {expect} = require('chai');
-const supertest = require('supertest');
-const api = supertest(app);
-const BASE_URL = '/v' + require('../../package.json').version.split('.')[0];
-const {uuid} = require('../utils');
+const config = require('../../src/config');
+const MenuCRUD = require('../../src/controllers/utils/crud')(require('../../src/models/Menu'));
+const {uuid, api, buildUrl} = require('../utils');
 
-const buildUrl = (url) => BASE_URL + url;
+const createMenu = async () => {
+    const menu = await MenuCRUD.create({
+        name: uuid(),
+    });
 
-describe('CRUD Integrations', () => {
+    return menu.id;
+};
+
+// TODO : ACL
+let adminToken;
+
+describe('Menu Integrations', () => {
+    before((done) => {
+        api.post(buildUrl('/users/login'))
+            .send(config.admin)
+            .end((err, res) => {
+                if (err) return done(err);
+                adminToken = res.body.id;
+                done();
+            });
+    });
+
+    after((done) => {
+        api.post(buildUrl('/users/logout'))
+            .auth(adminToken, {type: 'bearer'})
+            .end((err) => {
+                if (err) return done(err);
+                done();
+            });
+    });
+
     describe('Find', () => {
-        it('should find data', (done) => {
+        let menuId;
+
+        before(async () => {
+            menuId = await createMenu();
+        });
+
+        it('should find menus', (done) => {
             api.get(buildUrl('/menus'))
                 .expect('Content-Type', /json/)
                 .expect(200)
                 .end((err, res) => {
                     if (err) return done(err);
                     expect(res.body).to.be.an('array');
+                    expect(res.body).to.not.be.empty;
+                    expect(res.body).to.satisfy((arr) => !_.isNil(arr.find((m) => m.id === menuId)));
                     done();
                 });
+        });
+
+        after(async () => {
+            if (menuId) await MenuCRUD.destroyById(menuId);
         });
     });
 
     describe('Find by ID', () => {
-        const data = {
-            name: uuid(),
-            price: 50,
-        };
+        let menuId;
 
         before(async () => {
-            const {id} = await crud.create(data);
-            data.id = id;
+            menuId = await createMenu();
         });
 
         it('should find data by id', (done) => {
-            api.get(buildUrl('/menus/' + data.id))
+            api.get(buildUrl('/menus/' + menuId))
                 .expect('Content-Type', /json/)
                 .expect(200)
                 .end((err, res) => {
@@ -51,38 +84,44 @@ describe('CRUD Integrations', () => {
         });
 
         after(async () => {
-            await crud.destroyById(data.id);
+            if (menuId) await MenuCRUD.destroyById(menuId);
         });
     });
 
     describe('Create', () => {
+        let menuId;
+
         it('should create an instance', (done) => {
             const name = uuid();
 
             api.post(buildUrl('/menus'))
+                .auth(adminToken, {type: 'bearer'})
                 .send({
                     name,
-                    price: 50,
                 })
                 .expect(201)
-                .end((err, res) => {
+                .end(async (err, res) => {
                     if (err) return done(err);
                     expect(res.body).to.be.an('object');
                     expect(res.body).to.have.property('id');
                     expect(res.body.name).to.be.equal(name);
+                    menuId = res.body.id;
                     done();
                 });
+        });
+
+        after(async () => {
+            if (menuId) await MenuCRUD.destroyById(menuId);
         });
     });
 
     describe('Update properties', () => {
         const data = {
             name: uuid(),
-            price: 50,
         };
 
         before(async () => {
-            const {id} = await crud.create(data);
+            const {id} = await MenuCRUD.create(data);
             data.id = id;
         });
 
@@ -90,6 +129,7 @@ describe('CRUD Integrations', () => {
 
         it('should update an instance', (done) => {
             api.patch(buildUrl('/menus/' + data.id))
+                .auth(adminToken, {type: 'bearer'})
                 .send({
                     name,
                 })
@@ -104,7 +144,7 @@ describe('CRUD Integrations', () => {
         });
 
         after(async () => {
-            await crud.destroyById(data.id);
+            if (data.id) await MenuCRUD.destroyById(data.id);
         });
     });
 
@@ -112,11 +152,10 @@ describe('CRUD Integrations', () => {
         describe('Update properties', () => {
             const data = {
                 name: uuid(),
-                price: 50,
             };
 
             before(async () => {
-                const {id} = await crud.create(data);
+                const {id} = await MenuCRUD.create(data);
                 data.id = id;
             });
 
@@ -124,6 +163,7 @@ describe('CRUD Integrations', () => {
 
             it('should update an instance', (done) => {
                 api.put(buildUrl('/menus/' + data.id))
+                    .auth(adminToken, {type: 'bearer'})
                     .send({
                         name,
                     })
@@ -138,7 +178,7 @@ describe('CRUD Integrations', () => {
             });
 
             after(async () => {
-                await crud.destroyById(data.id);
+                if (data.id) await MenuCRUD.destroyById(data.id);
             });
         });
     });
@@ -146,33 +186,37 @@ describe('CRUD Integrations', () => {
     describe('Delete', () => {
         const data = {
             name: uuid(),
-            price: 50,
         };
 
         before(async () => {
-            const {id} = await crud.create(data);
+            const {id} = await MenuCRUD.create(data);
             data.id = id;
         });
 
         it('should delete', (done) => {
             api.delete(buildUrl('/menus/' + data.id))
+                .auth(adminToken, {type: 'bearer'})
                 .expect(204, done);
         });
 
-        it('should not delete and return 204', (done) => {
+        it('should not delete and return 404', (done) => {
             api.delete(buildUrl('/menus/' + data.id))
-                .expect(204, done);
+                .auth(adminToken, {type: 'bearer'})
+                .expect(404, done);
+        });
+
+        after(async () => {
+            if (data.id) await MenuCRUD.destroyById(data.id);
         });
     });
 
     describe('Exists', () => {
         const data = {
             name: uuid(),
-            price: 49,
         };
 
         before(async () => {
-            const {id} = await crud.create(data);
+            const {id} = await MenuCRUD.create(data);
             data.id = id;
         });
 
@@ -187,7 +231,7 @@ describe('CRUD Integrations', () => {
         });
 
         after(async () => {
-            await crud.destroyById(data.id);
+            if (data.id) await MenuCRUD.destroyById(data.id);
         });
     });
 
@@ -199,7 +243,7 @@ describe('CRUD Integrations', () => {
                     if (err) return done(err);
                     expect(res.body).to.be.an('object');
                     expect(res.body.count).to.be.finite;
-                    expect(res.body.count).to.be.above(0);
+                    expect(res.body.count).to.be.above(-1);
                     done();
                 });
         });

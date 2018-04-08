@@ -1,5 +1,6 @@
 const _ = require('lodash');
-const {checkSchema} = require('express-validator/check');
+const validate = require('express-validation');
+const Joi = require('joi');
 const auth = require('../middlewares/auth');
 
 module.exports = function({router, model, validations = {}, accessControl = {}, logger}) {
@@ -17,30 +18,20 @@ module.exports = function({router, model, validations = {}, accessControl = {}, 
     }
 
     const mandatoryId = {
-        in: 'params',
-        errorMessage: 'ID is mandatory',
-        isInt: true,
+        params: {
+            id: Joi.number().integer().required(),
+        },
     };
 
     // Those are the default validations which could be overridden
     const routerValidations = _.merge({
         find: {},
-        findById: {
-            id: mandatoryId,
-        },
+        findById: mandatoryId,
         create: {},
-        patch: {
-            id: mandatoryId,
-        },
-        update: {
-            id: mandatoryId,
-        },
-        delete: {
-            id: mandatoryId,
-        },
-        exists: {
-            id: mandatoryId,
-        },
+        patch: mandatoryId,
+        update: mandatoryId,
+        delete: mandatoryId,
+        exists: mandatoryId,
         count: {},
     }, validations);
 
@@ -76,7 +67,7 @@ module.exports = function({router, model, validations = {}, accessControl = {}, 
      *           items:
      *             type: object
      */
-    router.get('/', routerAccessControl.find, checkSchema(routerValidations.find),
+    router.get('/', routerAccessControl.find, validate(routerValidations.find),
         async (req, res, next) => {
             try {
                 return res.json(await model.fetchAll());
@@ -106,7 +97,7 @@ module.exports = function({router, model, validations = {}, accessControl = {}, 
      *           properties:
      *             count: number
      */
-    router.get('/count', routerAccessControl.count, checkSchema(routerValidations.count),
+    router.get('/count', routerAccessControl.count, validate(routerValidations.count),
         async (req, res, next) => {
             try {
                 const where = req.body.where || {};
@@ -143,7 +134,7 @@ module.exports = function({router, model, validations = {}, accessControl = {}, 
      *       404:
      *         description: Not found
      */
-    router.get('/:id', routerAccessControl.findById, checkSchema(routerValidations.findById),
+    router.get('/:id', routerAccessControl.findById, validate(routerValidations.findById),
         async (req, res, next) => {
             try {
                 const id = req.params.id;
@@ -181,7 +172,7 @@ module.exports = function({router, model, validations = {}, accessControl = {}, 
      *         schema:
      *           type: object
      */
-    router.post('/', routerAccessControl.create, checkSchema(routerValidations.create),
+    router.post('/', routerAccessControl.create, validate(routerValidations.create),
         async (req, res, next) => {
             try {
                 return res.status(201).json(await model.create(req.body));
@@ -233,7 +224,7 @@ module.exports = function({router, model, validations = {}, accessControl = {}, 
      *       404:
      *         description: Not found
      */
-    router.patch('/:id', routerAccessControl.patch, checkSchema(routerValidations.patch),
+    router.patch('/:id', routerAccessControl.patch, validate(routerValidations.patch),
         async (req, res, next) => {
             try {
                 await update(res, req.params.id, req.body);
@@ -268,7 +259,7 @@ module.exports = function({router, model, validations = {}, accessControl = {}, 
      *       404:
      *         description: Not found
      */
-    router.put('/:id', routerAccessControl.update, checkSchema(routerValidations.update),
+    router.put('/:id', routerAccessControl.update, validate(routerValidations.update),
         async (req, res, next) => {
             try {
                 await update(res, req.params.id, req.body);
@@ -299,7 +290,7 @@ module.exports = function({router, model, validations = {}, accessControl = {}, 
      *       404:
      *         description: The instance is not found
      */
-    router.head('/:id', routerAccessControl.exists, checkSchema(routerValidations.exists),
+    router.head('/:id', routerAccessControl.exists, validate(routerValidations.exists),
         async (req, res, next) => {
             try {
                 const id = req.params.id;
@@ -332,7 +323,7 @@ module.exports = function({router, model, validations = {}, accessControl = {}, 
      *       404:
      *         description: Not found
      */
-    router.delete('/:id', routerAccessControl.delete, checkSchema(routerValidations.delete),
+    router.delete('/:id', routerAccessControl.delete, validate(routerValidations.delete),
         async (req, res, next) => {
             try {
                 const id = req.params.id;
