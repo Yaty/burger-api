@@ -38,6 +38,8 @@ module.exports = {
             await instance.menus().attach(menuIds);
         }
 
+        // todo : calculate price from products and menus
+
         return instance.toJSON();
     },
 };

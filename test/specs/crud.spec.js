@@ -6,7 +6,6 @@ const {expect} = require('chai');
 describe('CRUD Spec', () => {
     const testData = {
         name: uuid(),
-        price: 50,
     };
 
     before(async () => {
@@ -25,7 +24,6 @@ describe('CRUD Spec', () => {
     describe('create', () => {
         const data = {
             name: uuid(),
-            price: 50,
         };
 
         it('should create properly', async () => {
@@ -43,7 +41,6 @@ describe('CRUD Spec', () => {
     describe('destroyById', () => {
         const data = {
             name: uuid(),
-            price: 50,
         };
 
         before(async () => {
@@ -59,7 +56,7 @@ describe('CRUD Spec', () => {
 
     describe('exists', () => {
         it('should exists', async () => {
-            const res = await crud.exists(testData);
+            const res = await crud.exists({where: testData});
             expect(res).to.be.equal(true);
         });
 

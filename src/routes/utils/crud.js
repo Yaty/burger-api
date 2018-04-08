@@ -3,7 +3,7 @@ const validate = require('express-validation');
 const Joi = require('joi');
 const auth = require('../middlewares/auth');
 
-module.exports = function({router, model, validations = {}, accessControl = {}, logger}) {
+module.exports = function({router, model, validations = {}, accessControl = {}, insertUserId = false, logger}) {
     // This function will not work properly with bad input
     if (!_.isFunction(router) || !_.isObject(model) || !_.isObject(logger)) {
         const msg = 'CRUD utils needs to have a router, a model, a logger.';
@@ -175,6 +175,10 @@ module.exports = function({router, model, validations = {}, accessControl = {}, 
     router.post('/', routerAccessControl.create, validate(routerValidations.create),
         async (req, res, next) => {
             try {
+                if (insertUserId) {
+                    req.body.userId = res.locals.user.id;
+                }
+
                 return res.status(201).json(await model.create(req.body));
             } catch (err) {
                 next(err);

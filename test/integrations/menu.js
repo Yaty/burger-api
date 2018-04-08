@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const {expect} = require('chai');
 const config = require('../../src/config');
-const MenuCRUD = require('../../src/controllers/utils/crud')(require('../../src/models/Menu'));
+const MenuCRUD = require('../../src/controllers/Menu');
 const {uuid, api, buildUrl} = require('../utils');
 
 const createMenu = async () => {
