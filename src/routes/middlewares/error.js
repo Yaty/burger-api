@@ -8,7 +8,10 @@ module.exports = (logger) => {
             isValidCode(err.statusCode) ? err.statusCode :
             isValidCode(err.status) ? err.status : 500;
 
-        logger[statusCode >= 500 ? 'error' : 'info']('Error handler middleware', {err, path: req.path});
+        logger[statusCode >= 500 ? 'error' : 'info'](
+            'Error handler middleware',
+            {err, path: req.path, errors: JSON.stringify(err.errors || {})},
+        );
 
         return res.status(statusCode).json({
             error: {

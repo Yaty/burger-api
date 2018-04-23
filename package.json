@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node ./src/bin/www.js",
     "migrate": "node ./src/db/migrate.js",
-    "test": "nyc mocha test/**/*.js"
+    "test": "nyc mocha test --recursive --exit --no-timeouts"
   },
   "dependencies": {
     "bcrypt": "^1.0.3",

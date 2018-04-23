@@ -7,24 +7,25 @@ const auth = require('./middlewares/auth');
 const validate = require('express-validation');
 const Joi = require('joi');
 
-const validations = {};
-const accessControl = {
-    find: auth.ifAdmin(),
-    findById: auth.ifOwner(),
-    create: auth.ifAnyone(),
-    patch: auth.ifOwner(),
-    update: auth.ifOwner(),
-    delete: auth.ifOwner(),
-    exists: auth.ifAdmin(),
-    count: auth.ifAdmin(),
+const options = {
+    validations: {},
+    accessControl: {
+        find: auth.ifAdmin(),
+        findById: auth.ifOwner(),
+        create: auth.ifAnyone(),
+        patch: auth.ifOwner(),
+        update: auth.ifOwner(),
+        delete: auth.ifOwner(),
+        exists: auth.ifAdmin(),
+        count: auth.ifAdmin(),
+    },
 };
 
 crud({
     router,
     model: User,
-    accessControl,
-    validations,
     logger,
+    ...options,
 });
 
 const loginValidation = {

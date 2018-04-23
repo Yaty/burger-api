@@ -27,5 +27,5 @@ knex.raw('select 1+1 as result')
     .then(() => logger.info('Database migrated.'))
     .catch((err) => {
         logger.fatal('Error while connecting to the database.', {err});
-        process.exit(0);
+        process.exit(1);
     });

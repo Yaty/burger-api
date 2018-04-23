@@ -23,7 +23,7 @@ module.exports = function(model) {
         const item = await model.forge({id}).fetch(options);
 
         if (!_.isNil(item)) {
-            return json === true ? item.toJSON() : item;
+            return json === true ? item.toJSON({omitPivot: true}) : item;
         }
 
         return undefined;

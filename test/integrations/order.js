@@ -93,19 +93,14 @@ describe('Order Integrations', () => {
         let orderId;
 
         it('should create an instance', (done) => {
-            const price = 50;
-
             api.post(buildUrl('/orders'))
                 .auth(adminToken, {type: 'bearer'})
-                .send({
-                    price,
-                })
                 .expect(201)
                 .end(async (err, res) => {
                     if (err) return done(err);
                     expect(res.body).to.be.an('object');
                     expect(res.body).to.have.property('id');
-                    expect(res.body.price).to.be.equal(price);
+                    expect(res.body.price).to.be.equal(0);
                     orderId = res.body.id;
                     done();
                 });
@@ -126,20 +121,15 @@ describe('Order Integrations', () => {
             data.id = id;
         });
 
-        const price = 60;
-
         it('should update an instance', (done) => {
             api.patch(buildUrl('/orders/' + data.id))
                 .auth(adminToken, {type: 'bearer'})
-                .send({
-                    price,
-                })
                 .expect(200)
                 .end((err, res) => {
                     if (err) return done(err);
                     expect(res.body).to.be.an('object');
                     expect(res.body).to.have.property('id');
-                    expect(res.body.price).to.be.equal(price);
+                    expect(res.body.price).to.be.equal(0);
                     done();
                 });
         });
@@ -160,20 +150,15 @@ describe('Order Integrations', () => {
                 data.id = id;
             });
 
-            const price = 70;
-
             it('should update an instance', (done) => {
                 api.put(buildUrl('/orders/' + data.id))
                     .auth(adminToken, {type: 'bearer'})
-                    .send({
-                        price,
-                    })
                     .expect(200)
                     .end((err, res) => {
                         if (err) return done(err);
                         expect(res.body).to.be.an('object');
                         expect(res.body).to.have.property('id');
-                        expect(res.body.price).to.be.equal(price);
+                        expect(res.body.price).to.be.equal(0);
                         done();
                     });
             });

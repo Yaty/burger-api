@@ -4,9 +4,18 @@ const express = require('express');
 const router = new express.Router();
 const crud = require('./utils/crud');
 const auth = require('./middlewares/auth');
+// const Joi = require('joi');
+
+const orderValidation = {
+    body: {},
+};
 
 const options = {
-    validations: {},
+    validations: {
+        create: orderValidation,
+        patch: orderValidation,
+        update: orderValidation,
+    },
     accessControl: {
         find: auth.ifAdmin(),
         findById: auth.ifOwner(),
@@ -17,7 +26,7 @@ const options = {
         exists: auth.ifAdmin(),
         count: auth.ifAdmin(),
     },
-    insertUserId: true
+    insertUserId: true,
 };
 
 crud({

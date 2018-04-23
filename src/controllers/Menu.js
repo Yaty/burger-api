@@ -28,4 +28,7 @@ module.exports = {
 
         return instance.toJSON();
     },
+    async fetchById(id, json, options) {
+        return await crud.fetchById(id, json, {...options, withRelated: ['products']});
+    },
 };

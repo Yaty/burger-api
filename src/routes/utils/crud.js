@@ -14,7 +14,7 @@ module.exports = function({router, model, validations = {}, accessControl = {}, 
             console.error(msg, router, model, logger);
         }
 
-        process.exit(0);
+        process.exit(1);
     }
 
     const mandatoryId = {
@@ -24,7 +24,7 @@ module.exports = function({router, model, validations = {}, accessControl = {}, 
     };
 
     // Those are the default validations which could be overridden
-    const routerValidations = _.merge({
+    const routerValidations = {
         find: {},
         findById: mandatoryId,
         create: {},
@@ -33,9 +33,10 @@ module.exports = function({router, model, validations = {}, accessControl = {}, 
         delete: mandatoryId,
         exists: mandatoryId,
         count: {},
-    }, validations);
+        ...validations,
+    };
 
-    const routerAccessControl = _.merge({
+    const routerAccessControl = {
         find: auth.ifAnyone(),
         findById: auth.ifAnyone(),
         create: auth.ifAnyone(),
@@ -44,7 +45,8 @@ module.exports = function({router, model, validations = {}, accessControl = {}, 
         delete: auth.ifAnyone(),
         exists: auth.ifAnyone(),
         count: auth.ifAnyone(),
-    }, accessControl);
+        ...accessControl,
+    };
 
     /**
      * @swagger
@@ -175,7 +177,7 @@ module.exports = function({router, model, validations = {}, accessControl = {}, 
     router.post('/', routerAccessControl.create, validate(routerValidations.create),
         async (req, res, next) => {
             try {
-                if (insertUserId) {
+                if (insertUserId && res.locals.user && res.locals.user.id) {
                     req.body.userId = res.locals.user.id;
                 }
 
