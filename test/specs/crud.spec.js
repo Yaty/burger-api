@@ -72,6 +72,37 @@ describe('CRUD Spec', () => {
             expect(data).to.be.an('array');
             expect(data).to.not.be.empty;
         });
+
+        it('should filter', async () => {
+            const name = uuid();
+
+            await crud.create({
+                name,
+            });
+
+            const data = await crud.fetchAll({
+                name,
+            });
+
+            expect(data).to.be.an('array');
+            expect(data.length).to.equal(1);
+            expect(data[0]).to.have.property('name').to.equal(name);
+        });
+
+        it('should limit', async () => {
+            await crud.create({
+                name: uuid(),
+            });
+
+            await crud.create({
+                name: uuid(),
+            });
+
+            const data = await crud.fetchAll({}, 2);
+
+            expect(data).to.be.an('array');
+            expect(data.length).to.be.equal(2);
+        });
     });
 
     describe('fetchById', () => {

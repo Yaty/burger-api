@@ -4,11 +4,15 @@ module.exports = function(model) {
     /**
      * Find all data from a model
      * @param {Object} where, optional
+     * @param {Number=} limit
      * @param {Boolean} json
      * @return {Array}
      */
-    async function fetchAll(where = {}, json = true) {
-        const data = await model.where(where).fetchAll();
+    async function fetchAll(where = {}, limit, json = true) {
+        const data = await model.forge().query((q) => {
+            if (_.isNumber(limit) && limit > 0) q.limit(limit);
+        }).where(where).fetchAll();
+
         return json === true ? data.toJSON() : data;
     }
 
@@ -16,7 +20,7 @@ module.exports = function(model) {
      * Find a data by it's ID
      * @param {String} id
      * @param {Boolean} json
-     * @param {Object} options
+     * @param {Object=} options
      * @return {Object|Model}
      */
     async function fetchById(id, json = true, options) {

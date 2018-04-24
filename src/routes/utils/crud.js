@@ -72,7 +72,7 @@ module.exports = function({router, model, validations = {}, accessControl = {}, 
     router.get('/', routerAccessControl.find, validate(routerValidations.find),
         async (req, res, next) => {
             try {
-                return res.json(await model.fetchAll());
+                return res.json(await model.fetchAll(req.query.where, req.query.limit));
             } catch (err) {
                 next(err);
             }
