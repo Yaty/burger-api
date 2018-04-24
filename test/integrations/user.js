@@ -71,6 +71,7 @@ describe('User Integrations', () => {
 
         it('should find data by id', (done) => {
             api.get(buildUrl('/users/' + userId))
+                .auth(adminToken, {type: 'bearer'})
                 .expect('Content-Type', /json/)
                 .expect(200)
                 .end((err, res) => {
@@ -80,9 +81,9 @@ describe('User Integrations', () => {
                 });
         });
 
-        it('should get 404', (done) => {
+        it('should get 401', (done) => {
             api.get(buildUrl('/users/100000'))
-                .expect(404, done);
+                .expect(401, done);
         });
 
         after(async () => {
@@ -237,12 +238,13 @@ describe('User Integrations', () => {
 
         it('should exists', (done) => {
             api.head(buildUrl('/users/' + data.id))
+                .auth(adminToken, {type: 'bearer'})
                 .expect(200, done);
         });
 
         it('should not exists', (done) => {
             api.head(buildUrl('/users/500000'))
-                .expect(404, done);
+                .expect(401, done);
         });
 
         after(async () => {

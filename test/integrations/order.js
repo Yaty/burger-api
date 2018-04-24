@@ -2,18 +2,23 @@ const _ = require('lodash');
 const {expect} = require('chai');
 const config = require('../../src/config');
 const OrderCRUD = require('../../src/controllers/Order');
-const {api, buildUrl} = require('../utils');
+const {api, buildUrl, uuid} = require('../utils');
 
-const createOrder = async () => {
+const createOrder = async (userId) => {
     const order = await OrderCRUD.create({
         price: 50,
+        userId,
     });
+
+    console.log(order);
 
     return order.id;
 };
 
 // TODO : ACL
 let adminToken;
+let userId;
+let userToken;
 
 describe('Order Integrations', () => {
     before((done) => {
@@ -22,7 +27,29 @@ describe('Order Integrations', () => {
             .end((err, res) => {
                 if (err) return done(err);
                 adminToken = res.body.id;
-                done();
+
+                const email = uuid() + '@' + uuid() + '.fr';
+                const password = uuid();
+
+                api.post(buildUrl('/users'))
+                    .send({
+                        email,
+                        password,
+                    })
+                    .end((err, res) => {
+                        if (err) return done(err);
+                        userId = res.body.id;
+                        api.post(buildUrl('/users/login'))
+                            .send({
+                                email,
+                                password,
+                            })
+                            .end((err, res) => {
+                                if (err) return done(err);
+                                userToken = res.body.id;
+                                done();
+                            });
+                    });
             });
     });
 
@@ -65,11 +92,12 @@ describe('Order Integrations', () => {
         let orderId;
 
         before(async () => {
-            orderId = await createOrder();
+            orderId = await createOrder(userId);
         });
 
         it('should find data by id', (done) => {
             api.get(buildUrl('/orders/' + orderId))
+                .auth(userToken, {type: 'bearer'})
                 .expect('Content-Type', /json/)
                 .expect(200)
                 .end((err, res) => {
@@ -79,9 +107,9 @@ describe('Order Integrations', () => {
                 });
         });
 
-        it('should get 404', (done) => {
+        it('should get 401', (done) => {
             api.get(buildUrl('/orders/100000'))
-                .expect(404, done);
+                .expect(401, done);
         });
 
         after(async () => {
@@ -208,12 +236,13 @@ describe('Order Integrations', () => {
 
         it('should exists', (done) => {
             api.head(buildUrl('/orders/' + data.id))
+                .auth(adminToken, {type: 'bearer'})
                 .expect(200, done);
         });
 
         it('should not exists', (done) => {
             api.head(buildUrl('/orders/500000'))
-                .expect(404, done);
+                .expect(401, done);
         });
 
         after(async () => {

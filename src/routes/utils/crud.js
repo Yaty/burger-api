@@ -37,14 +37,14 @@ module.exports = function({router, model, validations = {}, accessControl = {}, 
     };
 
     const routerAccessControl = {
-        find: auth.ifAnyone(),
-        findById: auth.ifAnyone(),
-        create: auth.ifAnyone(),
-        patch: auth.ifAnyone(),
-        update: auth.ifAnyone(),
-        delete: auth.ifAnyone(),
-        exists: auth.ifAnyone(),
-        count: auth.ifAnyone(),
+        find: auth.ifAnyone,
+        findById: auth.ifAnyone,
+        create: auth.ifAnyone,
+        patch: auth.ifAnyone,
+        update: auth.ifAnyone,
+        delete: auth.ifAnyone,
+        exists: auth.ifAnyone,
+        count: auth.ifAnyone,
         ...accessControl,
     };
 

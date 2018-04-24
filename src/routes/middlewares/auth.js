@@ -1,58 +1,86 @@
+const _ = require('lodash');
 const errors = require('../../utils/errors');
-const logger = require('../../utils/logger')('auth');
+const controllers = require('../../controllers');
+
+const isAdmin = (roles) => roles.includes('admin');
+const isAuthenticated = (roles) => roles.includes('authenticated');
+const allow = (next) => next();
+const forbid = (next) => next(errors.unauthorized());
+
+/**
+ * If admin middleware
+ * @param {Object} req
+ * @param {Object} res
+ * @param {Function} next
+ * @return {*}
+ */
+function ifAdmin(req, res, next) {
+    return isAdmin(res.locals.roles) ? allow(next) : forbid(next);
+}
+
+/**
+ * If authenticated middleware
+ * @param {Object} req
+ * @param {Object} res
+ * @param {Function} next
+ * @return {*}
+ */
+function ifAuthenticated(req, res, next) {
+    return isAuthenticated(res.locals.roles) ? allow(next) : forbid(next);
+}
+
+/**
+ * If owner middleware
+ * It will check if the model asked in the route is owned by the user
+ * @param {Object} req
+ * @param {Object} res
+ * @param {Function} next
+ * @return {*}
+ */
+async function ifOwner(req, res, next) {
+    if (isAdmin(res.locals.roles)) return allow(next);
+
+    const path = req.originalUrl.split('/');
+    const model = path[2];
+    const modelId = path[3];
+    const userId = res.locals.user && res.locals.user.id;
+    if (_.isNil(model) || _.isNil(modelId) || _.isNil(userId)) return forbid(next);
+
+    const modelName = model[0].toUpperCase() + model.substring(1, model.length - 1);
+    const controller = controllers[modelName];
+    if (_.isNil(controller)) return forbid(next);
+
+    const instance = await controller.fetchById(modelId);
+    if (_.isNil(instance)) return forbid(next);
+    return String(instance.userId) === String(userId) ? allow(next) : forbid(next);
+}
+
+/**
+ * If anyone middleware
+ * @param {Object} req
+ * @param {Object} res
+ * @param {Function} next
+ * @return {*}
+ */
+function ifAnyone(req, res, next) {
+    return allow(next);
+}
+
+/**
+ * Unauthorized middleware
+ * @param {Object} req
+ * @param {Object} res
+ * @param {Function} next
+ * @return {*}
+ */
+function unauthorized(req, res, next) {
+    return forbid(next);
+}
 
 module.exports = {
-    ifAdmin() {
-        return function(req, res, next) {
-            if (res.locals.roles.includes('admin')) {
-                logger.debug('ifAdmin : ok');
-                return next();
-            }
-
-            logger.debug('ifAdmin : ko');
-            return next(errors.unauthorized());
-        };
-    },
-    ifAuthenticated() {
-        return function(req, res, next) {
-            if (res.locals.roles.includes('authenticated')) {
-                logger.debug('ifAuthenticated : ok');
-                return next();
-            }
-
-            logger.debug('ifAuthenticated : ko');
-            return next(errors.unauthorized());
-        };
-    },
-    ifUnauthenticated() {
-        return function(req, res, next) {
-            if ((res.locals.roles.length === 1 && res.locals.roles[0] === 'everyone') || res.locals.roles.includes('admin')) {
-                logger.debug('ifUnauthenticated : ok');
-                return next();
-            }
-
-            logger.debug('ifUnauthenticated : ko');
-            return next(errors.unauthorized());
-        };
-    },
-    ifOwner() {
-        return function(req, res, next) {
-            // TODO : get model in route, then fetch model and check
-            // checkAccessControl(res.locals.roles, ['authenticated'], next);
-            logger.debug('ifOwner : ok');
-            next();
-        };
-    },
-    ifAnyone() {
-        return function(req, res, next) {
-            logger.debug('ifAnyone : ok');
-            next();
-        };
-    },
-    unauthorized() {
-        return function(req, res, next) {
-            logger.debug('unauthorized');
-            next(errors.unauthorized());
-        };
-    },
+    ifAdmin,
+    ifAuthenticated,
+    ifOwner,
+    ifAnyone,
+    unauthorized,
 };

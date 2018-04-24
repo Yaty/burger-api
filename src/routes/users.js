@@ -10,14 +10,14 @@ const Joi = require('joi');
 const options = {
     validations: {},
     accessControl: {
-        find: auth.ifAdmin(),
-        findById: auth.ifOwner(),
-        create: auth.ifAnyone(),
-        patch: auth.ifOwner(),
-        update: auth.ifOwner(),
-        delete: auth.ifOwner(),
-        exists: auth.ifAdmin(),
-        count: auth.ifAdmin(),
+        find: auth.ifAdmin,
+        findById: auth.ifOwner,
+        create: auth.ifAnyone,
+        patch: auth.ifOwner,
+        update: auth.ifOwner,
+        delete: auth.ifOwner,
+        exists: auth.ifAdmin,
+        count: auth.ifAdmin,
     },
 };
 
@@ -69,7 +69,7 @@ const loginValidation = {
  *       401:
  *         description: Login failed
  */
-router.post('/login', auth.ifUnauthenticated(), validate(loginValidation), async (req, res, next) => {
+router.post('/login', auth.ifAnyone, validate(loginValidation), async (req, res, next) => {
         try {
             return res.json(await User.login(req.body.email, req.body.password));
         } catch (err) {
@@ -88,7 +88,7 @@ router.post('/login', auth.ifUnauthenticated(), validate(loginValidation), async
  *       401:
  *         description: Logout failed
  */
-router.post('/logout', auth.ifAuthenticated(), async (req, res, next) => {
+router.post('/logout', auth.ifAuthenticated, async (req, res, next) => {
     try {
         await User.logout(res.locals.token);
         return res.sendStatus(204);
