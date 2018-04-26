@@ -5,17 +5,21 @@ const router = new express.Router();
 const crud = require('./utils/crud');
 const auth = require('./middlewares/auth');
 const validate = require('express-validation');
-const Joi = require('joi');
+const validations = require('./utils/validation');
 
 const options = {
-    validations: {},
+    validations: {
+        create: validations.users.create,
+        update: validations.users.update,
+        patch: validations.users.update,
+    },
     accessControl: {
         find: auth.ifAdmin,
-        findById: auth.ifOwner,
+        findById: auth.ifOwner(User),
         create: auth.ifAnyone,
-        patch: auth.ifOwner,
-        update: auth.ifOwner,
-        delete: auth.ifOwner,
+        patch: auth.ifOwner(User),
+        update: auth.ifOwner(User),
+        delete: auth.ifOwner(User),
         exists: auth.ifAdmin,
         count: auth.ifAdmin,
     },
@@ -27,13 +31,6 @@ crud({
     logger,
     ...options,
 });
-
-const loginValidation = {
-    body: {
-        email: Joi.string().email().required(),
-        password: Joi.string().required(),
-    },
-};
 
 /**
  * @swagger
@@ -69,7 +66,7 @@ const loginValidation = {
  *       401:
  *         description: Login failed
  */
-router.post('/login', auth.ifAnyone, validate(loginValidation), async (req, res, next) => {
+router.post('/login', auth.ifAnyone, validate(validations.users.login), async (req, res, next) => {
         try {
             return res.json(await User.login(req.body.email, req.body.password));
         } catch (err) {
@@ -92,6 +89,31 @@ router.post('/logout', auth.ifAuthenticated, async (req, res, next) => {
     try {
         await User.logout(res.locals.token);
         return res.sendStatus(204);
+    } catch (err) {
+        next(err);
+    }
+});
+
+/**
+ * @swagger
+ * /users/:id/orders:
+ *   get:
+ *     summary: Get user orders
+ *     responses:
+ *       200:
+ *         description: Orders
+ *       404:
+ *         description: No orders
+ */
+router.get('/:id/orders', validate(validations.mandatoryId), auth.ifOwner(User), async (req, res, next) => {
+    try {
+        const user = await User.fetchById(req.params.id);
+
+        if (user && user.orders) {
+            return res.json(user.orders);
+        }
+
+        return res.sendStatus(404);
     } catch (err) {
         next(err);
     }

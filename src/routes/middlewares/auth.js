@@ -1,6 +1,5 @@
 const _ = require('lodash');
 const errors = require('../../utils/errors');
-const controllers = require('../../controllers');
 
 const isAdmin = (roles) => roles.includes('admin');
 const isAuthenticated = (roles) => roles.includes('authenticated');
@@ -32,27 +31,21 @@ function ifAuthenticated(req, res, next) {
 /**
  * If owner middleware
  * It will check if the model asked in the route is owned by the user
- * @param {Object} req
- * @param {Object} res
- * @param {Function} next
- * @return {*}
+ * @param {Function} model
+ * @return {Function}
  */
-async function ifOwner(req, res, next) {
-    if (isAdmin(res.locals.roles)) return allow(next);
+function ifOwner(model) {
+    return async function(req, res, next) {
+        if (isAdmin(res.locals.roles)) return allow(next);
 
-    const path = req.originalUrl.split('/');
-    const model = path[2];
-    const modelId = path[3];
-    const userId = res.locals.user && res.locals.user.id;
-    if (_.isNil(model) || _.isNil(modelId) || _.isNil(userId)) return forbid(next);
+        const modelId = req.params.id;
+        const userId = res.locals.user && res.locals.user.id;
+        if (_.isNil(model) || _.isNil(modelId) || _.isNil(userId)) return forbid(next);
 
-    const modelName = model[0].toUpperCase() + model.substring(1, model.length - 1);
-    const controller = controllers[modelName];
-    if (_.isNil(controller)) return forbid(next);
-
-    const instance = await controller.fetchById(modelId);
-    if (_.isNil(instance)) return forbid(next);
-    return String(instance.userId) === String(userId) ? allow(next) : forbid(next);
+        const instance = await model.fetchById(modelId);
+        if (_.isNil(instance)) return forbid(next);
+        return instance.userId === userId || instance.id === userId ? allow(next) : forbid(next);
+    };
 }
 
 /**

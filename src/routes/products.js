@@ -4,20 +4,13 @@ const express = require('express');
 const router = new express.Router();
 const crud = require('./utils/crud');
 const auth = require('./middlewares/auth');
-const Joi = require('joi');
-
-const productValidation = {
-    body: {
-        price: Joi.number().min(0).required(),
-        name: Joi.string().required(),
-    },
-};
+const validations = require('./utils/validation');
 
 const options = {
     validations: {
-        create: productValidation,
-        patch: productValidation,
-        update: productValidation,
+        create: validations.products.create,
+        patch: validations.products.update,
+        update: validations.products.update,
     },
     accessControl: {
         find: auth.ifAnyone,

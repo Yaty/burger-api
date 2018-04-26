@@ -4,19 +4,14 @@ const express = require('express');
 const router = new express.Router();
 const crud = require('./utils/crud');
 const auth = require('./middlewares/auth');
-const Joi = require('joi');
-
-const menuValidation = {
-    body: {
-        name: Joi.string().required(),
-    },
-};
+const validate = require('express-validation');
+const validations = require('./utils/validation');
 
 const options = {
     validations: {
-        create: menuValidation,
-        patch: menuValidation,
-        update: menuValidation,
+        create: validations.menus.create,
+        patch: validations.menus.update,
+        update: validations.menus.update,
     },
     accessControl: {
         find: auth.ifAnyone,
@@ -37,7 +32,18 @@ crud({
     ...options,
 });
 
-router.get('/:id/products', auth.ifAnyone, async (req, res, next) => {
+/**
+ * @swagger
+ * /menus/:id/products:
+ *   get:
+ *     summary: Get menu products
+ *     responses:
+ *       200:
+ *         description: Products
+ *       404:
+ *         description: No products
+ */
+router.get('/:id/products', validate(validations.mandatoryId), auth.ifAnyone, async (req, res, next) => {
     try {
         const menu = await Menu.fetchById(req.params.id, true, {withRelated: 'products'});
 

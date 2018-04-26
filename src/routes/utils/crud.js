@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const validate = require('express-validation');
-const Joi = require('joi');
 const auth = require('../middlewares/auth');
+const validationsUtils = require('./validation');
 
 module.exports = function({router, model, validations = {}, accessControl = {}, insertUserId = false, logger}) {
     // This function will not work properly with bad input
@@ -17,21 +17,15 @@ module.exports = function({router, model, validations = {}, accessControl = {}, 
         process.exit(1);
     }
 
-    const mandatoryId = {
-        params: {
-            id: Joi.number().integer().required(),
-        },
-    };
-
     // Those are the default validations which could be overridden
     const routerValidations = {
         find: {},
-        findById: mandatoryId,
+        findById: validationsUtils.mandatoryId,
         create: {},
-        patch: mandatoryId,
-        update: mandatoryId,
-        delete: mandatoryId,
-        exists: mandatoryId,
+        patch: validationsUtils.mandatoryId,
+        update: validationsUtils.mandatoryId,
+        delete: validationsUtils.mandatoryId,
+        exists: validationsUtils.mandatoryId,
         count: {},
         ...validations,
     };
