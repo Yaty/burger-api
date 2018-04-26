@@ -59,7 +59,4 @@ module.exports = {
 
         return await crudMethods.updateById(id, data, json);
     },
-    async fetchById(id, json, options) {
-        return await crudMethods.fetchById(id, json, {...options, withRelated: ['orders', 'roles']});
-    },
 };

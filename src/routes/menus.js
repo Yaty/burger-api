@@ -37,4 +37,18 @@ crud({
     ...options,
 });
 
+router.get('/:id/products', auth.ifAnyone, async (req, res, next) => {
+    try {
+        const menu = await Menu.fetchById(req.params.id, true, {withRelated: 'products'});
+
+        if (menu && menu.products) {
+            return res.json(menu.products);
+        }
+
+        return res.sendStatus(404);
+    } catch (err) {
+        next(err);
+    }
+});
+
 module.exports = router;

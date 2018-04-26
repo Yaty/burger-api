@@ -51,6 +51,7 @@ async function make(data, makeFn) {
 
     data.price = await evalPrice(productIds, menuIds);
     const instance = await makeFn();
+    if (_.isNil(instance)) return;
 
     if (_.isArray(productIds)) {
         await instance.products().attach(productIds);
@@ -70,8 +71,5 @@ module.exports = {
     },
     async create(data) {
         return await make(data, async () => await crud.create(data, false));
-    },
-    async fetchById(id, json, options) {
-        return await crud.fetchById(id, json, {...options, withRelated: ['products', 'menus']});
     },
 };

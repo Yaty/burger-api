@@ -140,7 +140,8 @@ module.exports = function({router, model, validations = {}, accessControl = {}, 
         async (req, res, next) => {
             try {
                 const id = req.params.id;
-                const data = await model.fetchById(id);
+                const related = req.query.include && req.query.include.split(',');
+                const data = await model.fetchById(id, true, {withRelated: related});
 
                 if (_.isObject(data)) {
                     return res.json(data);

@@ -9,6 +9,7 @@ module.exports = {
         delete data.userIds;
 
         const instance = await crud.updateById(id, data, false);
+        if (_.isNil(instance)) return;
 
         if (_.isArray(userIds)) {
             await instance.users().attach(userIds);
@@ -21,6 +22,7 @@ module.exports = {
         delete data.userIds;
 
         const instance = await crud.create(data, false);
+        if (_.isNil(instance)) return;
 
         if (_.isArray(userIds)) {
             await instance.users().attach(userIds);

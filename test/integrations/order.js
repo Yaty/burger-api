@@ -10,8 +10,6 @@ const createOrder = async (userId) => {
         userId,
     });
 
-    console.log(order);
-
     return order.id;
 };
 

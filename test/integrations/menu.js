@@ -2,14 +2,25 @@ const _ = require('lodash');
 const {expect} = require('chai');
 const config = require('../../src/config');
 const MenuCRUD = require('../../src/controllers/Menu');
+const ProductCRUD = require('../../src/controllers/Product');
 const {uuid, api, buildUrl} = require('../utils');
 
-const createMenu = async () => {
+const createMenu = async (productIds = []) => {
     const menu = await MenuCRUD.create({
         name: uuid(),
+        productIds,
     });
 
     return menu.id;
+};
+
+const createProduct = async () => {
+    const product = await ProductCRUD.create({
+        name: uuid(),
+        price: uuid(),
+    });
+
+    return product.id;
 };
 
 // TODO : ACL
@@ -62,9 +73,11 @@ describe('Menu Integrations', () => {
 
     describe('Find by ID', () => {
         let menuId;
+        let productId;
 
         before(async () => {
-            menuId = await createMenu();
+            productId = await createProduct();
+            menuId = await createMenu([productId]);
         });
 
         it('should find data by id', (done) => {
@@ -74,6 +87,32 @@ describe('Menu Integrations', () => {
                 .end((err, res) => {
                     if (err) return done(err);
                     expect(res.body).to.be.an('object');
+                    expect(res.body).to.not.have.property('products');
+                    done();
+                });
+        });
+
+        it('should retrieve products inside a menu with a query', (done) => {
+            api.get(buildUrl('/menus/' + menuId + '?include=products'))
+                .expect('Content-Type', /json/)
+                .expect(200)
+                .end((err, res) => {
+                    if (err) return done(err);
+                    expect(res.body).to.have.property('products');
+                    expect(res.body.products).to.be.an('array');
+                    expect(res.body.products[0].id).to.be.equal(productId);
+                    done();
+                });
+        });
+
+        it('should retrieve products inside a menu with a route', (done) => {
+            api.get(buildUrl('/menus/' + menuId + '/products'))
+                .expect('Content-Type', /json/)
+                .expect(200)
+                .end((err, res) => {
+                    if (err) return done(err);
+                    expect(res.body).to.be.an('array');
+                    expect(res.body[0].id).to.be.equal(productId);
                     done();
                 });
         });
@@ -84,7 +123,8 @@ describe('Menu Integrations', () => {
         });
 
         after(async () => {
-            if (menuId) await MenuCRUD.destroyById(menuId);
+            await ProductCRUD.destroyById(productId);
+            await MenuCRUD.destroyById(menuId);
         });
     });
 
@@ -110,8 +150,41 @@ describe('Menu Integrations', () => {
                 });
         });
 
-        after(async () => {
-            if (menuId) await MenuCRUD.destroyById(menuId);
+        it('should create an instance with products', (done) => {
+            const name = uuid();
+            createProduct()
+                .then((productId) => {
+                    api.post(buildUrl('/menus'))
+                        .auth(adminToken, {type: 'bearer'})
+                        .send({
+                            name,
+                            productIds: [productId],
+                        })
+                        .expect(201)
+                        .end((err, res) => {
+                            if (err) return done(err);
+                            expect(res.body).to.be.an('object');
+                            expect(res.body).to.have.property('id');
+                            expect(res.body.name).to.be.equal(name);
+                            menuId = res.body.id;
+                            api.get(buildUrl('/menus/' + menuId + '/products'))
+                                .expect(200)
+                                .end((err, res) => {
+                                    if (err) return done(err);
+                                    expect(res.body).to.be.an('array');
+                                    expect(res.body[0].id).to.be.equal(productId);
+                                    done();
+                                });
+                        });
+                })
+                .catch(done);
+        });
+
+        afterEach(async () => {
+            if (menuId) {
+                await MenuCRUD.destroyById(menuId);
+                menuId = null;
+            }
         });
     });
 

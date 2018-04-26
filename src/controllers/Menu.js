@@ -9,6 +9,7 @@ module.exports = {
         delete data.productIds;
 
         const instance = await crud.updateById(id, data, false);
+        if (_.isNil(instance)) return;
 
         if (_.isArray(productIds)) {
             await instance.products().attach(productIds);
@@ -21,14 +22,12 @@ module.exports = {
         delete data.productIds;
 
         const instance = await crud.create(data, false);
+        if (_.isNil(instance)) return;
 
         if (_.isArray(productIds)) {
             await instance.products().attach(productIds);
         }
 
         return instance.toJSON();
-    },
-    async fetchById(id, json, options) {
-        return await crud.fetchById(id, json, {...options, withRelated: ['products']});
     },
 };

@@ -1,5 +1,5 @@
-const Model = require('../../src/models/Menu');
-const crud = require('../../src/controllers/utils/crud')(Model);
+const crud = require('../../src/controllers/Menu');
+const productCrud = require('../../src/controllers/Product');
 const {uuid} = require('../utils');
 const {expect} = require('chai');
 
@@ -8,9 +8,19 @@ describe('CRUD Spec', () => {
         name: uuid(),
     };
 
+    let productId;
+
     before(async () => {
-        const {id} = await crud.create(testData);
+        const product = await productCrud.create({name: uuid(), price: uuid()});
+        productId = product.id;
+
+        const {id} = await crud.create({...testData, productIds: [productId]});
         testData.id = id;
+    });
+
+    after(async () => {
+        await productCrud.destroyById(productId);
+        await crud.destroyById(testData.id);
     });
 
     describe('count', () => {
@@ -117,6 +127,13 @@ describe('CRUD Spec', () => {
             const item = await crud.fetchById(500000);
             expect(item).to.be.an('undefined');
         });
+
+        it('should include related models', async () => {
+            const item = await crud.fetchById(testData.id, true, {withRelated: ['products']});
+            expect(item).to.have.property('products');
+            expect(item.products).to.be.an('array');
+            expect(item.products).to.not.be.empty;
+        });
     });
 
     describe('updateById', () => {
@@ -142,7 +159,5 @@ describe('CRUD Spec', () => {
         });
     });
 
-    after(async () => {
-        await crud.destroyById(testData.id);
-    });
+
 });

@@ -43,19 +43,36 @@ module.exports = function(model) {
     }
 
     /**
-     * Destroy by ID
+     * Destroy by ID and detach attached models
      * @param {String} id
      * @return {Boolean} destroyed
      */
     async function destroyById(id) {
         const item = await fetchById(id, false);
 
-        if (!_.isNil(item)) {
-            await item.destroy();
-            return true;
+        if (_.isNil(item)) {
+            return false;
         }
 
-        return false;
+        const relations = Object.keys(item.relationships);
+        const itemWithRelations = await fetchById(id, true, {withRelated: relations});
+
+        for (const relation of relations) {
+            const data = itemWithRelations[relation];
+
+            if (!_.isArray(data) || !_.isFunction(item[relation])) {
+                continue;
+            }
+
+            const ids = data.map((d) => d.id);
+
+            if (_.isFunction(item[relation]().detach)) {
+                await item[relation]().detach(ids);
+            }
+        }
+
+        await item.destroy();
+        return true;
     }
 
     /**
