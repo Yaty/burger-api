@@ -26,7 +26,7 @@ async function evalPrice(productIds, menuIds) {
 
     if (_.isArray(menuIds)) {
         for (const menuId of menuIds) {
-            const menu = await Menu.fetchById(menuId);
+            const menu = await Menu.fetchById(menuId, true, {withRelated: ['products']});
 
             if (!_.isNil(menu) && _.isArray(menu.products)) {
                 price += menu.products.reduce((acc, p) => acc + p.price, 0);
