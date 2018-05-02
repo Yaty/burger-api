@@ -1,21 +1,24 @@
 {
   "name": "burger-api",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
+  "private": false,
   "scripts": {
     "start": "node ./src/bin/www.js",
     "migrate": "node ./src/db/migrate.js",
-    "test": "nyc mocha test/**/*.js"
+    "test": "mocha test --recursive --exit --no-timeouts",
+    "coverage": "nyc npm run test"
   },
   "dependencies": {
     "bcrypt": "^1.0.3",
     "body-parser": "~1.18.2",
     "bookshelf": "^0.12.1",
+    "bookshelf-relationships": "^1.0.1",
     "bookshelf-uuid": "^1.0.0",
     "bunyan": "^1.8.12",
     "bunyan-format": "^0.2.1",
     "express": "~4.15.5",
-    "express-validator": "^5.0.3",
+    "express-validation": "^1.0.2",
+    "joi": "^13.2.0",
     "knex": "^0.13.0",
     "lodash": "^4.17.5",
     "morgan": "~1.9.0",
@@ -25,10 +28,10 @@
   },
   "devDependencies": {
     "chai": "^4.1.2",
-    "eslint": "^4.18.2",
+    "eslint": "^4.19.1",
     "eslint-config-google": "^0.9.1",
-    "mocha": "^5.0.4",
-    "nyc": "^11.6.0",
+    "mocha": "^5.1.1",
+    "nyc": "^11.7.1",
     "supertest": "^3.0.0"
   },
   "engines": {

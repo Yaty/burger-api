@@ -19,11 +19,13 @@ const knex = require('knex')({
 
 const db = module.exports = require('bookshelf')(knex);
 db.plugin(require('bookshelf-uuid'));
+db.plugin(require('bookshelf-relationships'));
 db.plugin('visibility');
 
 knex.raw('select 1+1 as result')
     .then(() => logger.info('Database connected.'))
     .then(() => migrate(db))
+    .then(() => logger.info('Database migrated.'))
     .catch((err) => {
         logger.fatal('Error while connecting to the database.', {err});
         process.exit(1);

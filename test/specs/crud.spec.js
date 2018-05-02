@@ -1,17 +1,26 @@
-const Model = require('../../src/models/Menu');
-const crud = require('../../src/controllers/utils/crud')(Model);
+const crud = require('../../src/controllers/Menu');
+const productCrud = require('../../src/controllers/Product');
 const {uuid} = require('../utils');
 const {expect} = require('chai');
 
 describe('CRUD Spec', () => {
     const testData = {
         name: uuid(),
-        price: 50,
     };
 
+    let productId;
+
     before(async () => {
-        const {id} = await crud.create(testData);
+        const product = await productCrud.create({name: uuid(), price: uuid()});
+        productId = product.id;
+
+        const {id} = await crud.create({...testData, productIds: [productId]});
         testData.id = id;
+    });
+
+    after(async () => {
+        await productCrud.destroyById(productId);
+        await crud.destroyById(testData.id);
     });
 
     describe('count', () => {
@@ -25,7 +34,6 @@ describe('CRUD Spec', () => {
     describe('create', () => {
         const data = {
             name: uuid(),
-            price: 50,
         };
 
         it('should create properly', async () => {
@@ -43,7 +51,6 @@ describe('CRUD Spec', () => {
     describe('destroyById', () => {
         const data = {
             name: uuid(),
-            price: 50,
         };
 
         before(async () => {
@@ -59,7 +66,7 @@ describe('CRUD Spec', () => {
 
     describe('exists', () => {
         it('should exists', async () => {
-            const res = await crud.exists(testData);
+            const res = await crud.exists({where: testData});
             expect(res).to.be.equal(true);
         });
 
@@ -75,6 +82,37 @@ describe('CRUD Spec', () => {
             expect(data).to.be.an('array');
             expect(data).to.not.be.empty;
         });
+
+        it('should filter', async () => {
+            const name = uuid();
+
+            await crud.create({
+                name,
+            });
+
+            const data = await crud.fetchAll({
+                name,
+            });
+
+            expect(data).to.be.an('array');
+            expect(data.length).to.equal(1);
+            expect(data[0]).to.have.property('name').to.equal(name);
+        });
+
+        it('should limit', async () => {
+            await crud.create({
+                name: uuid(),
+            });
+
+            await crud.create({
+                name: uuid(),
+            });
+
+            const data = await crud.fetchAll({}, 2);
+
+            expect(data).to.be.an('array');
+            expect(data.length).to.be.equal(2);
+        });
     });
 
     describe('fetchById', () => {
@@ -88,6 +126,13 @@ describe('CRUD Spec', () => {
         it('should fetch a non existent item and return nil', async () => {
             const item = await crud.fetchById(500000);
             expect(item).to.be.an('undefined');
+        });
+
+        it('should include related models', async () => {
+            const item = await crud.fetchById(testData.id, true, {withRelated: ['products']});
+            expect(item).to.have.property('products');
+            expect(item.products).to.be.an('array');
+            expect(item.products).to.not.be.empty;
         });
     });
 
@@ -114,7 +159,5 @@ describe('CRUD Spec', () => {
         });
     });
 
-    after(async () => {
-        await crud.destroyById(testData.id);
-    });
+
 });

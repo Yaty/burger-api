@@ -4,25 +4,31 @@ const express = require('express');
 const router = new express.Router();
 const crud = require('./utils/crud');
 const auth = require('./middlewares/auth');
+const validations = require('./utils/validation');
 
-const validations = {};
-const accessControl = {
-    find: auth.ifAnyone,
-    findById: auth.ifAnyone,
-    create: auth.ifAdmin,
-    patch: auth.ifAdmin,
-    update: auth.ifAdmin,
-    delete: auth.ifAdmin,
-    exists: auth.ifAnyone,
-    count: auth.ifAnyone,
+const options = {
+    validations: {
+        create: validations.products.create,
+        patch: validations.products.update,
+        update: validations.products.update,
+    },
+    accessControl: {
+        find: auth.ifAnyone,
+        findById: auth.ifAnyone,
+        create: auth.ifAdmin,
+        patch: auth.ifAdmin,
+        update: auth.ifAdmin,
+        delete: auth.ifAdmin,
+        exists: auth.ifAnyone,
+        count: auth.ifAnyone,
+    },
 };
 
 crud({
     router,
     model: Product,
-    accessControl,
-    validations,
     logger,
+    ...options,
 });
 
 module.exports = router;

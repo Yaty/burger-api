@@ -1,11 +1,23 @@
+const _ = require('lodash');
+
+const isValidCode = (code) => _.isNumber(code) && code >= 100 && code <= 527;
+
 module.exports = (logger) => {
     return (err, req, res, next) => {
-        logger[err.statusCode >= 500 || isNaN(err.statusCode) ? 'error' : 'info']('Error handler middleware', {err, path: req.path});
+        const statusCode =
+            isValidCode(err.statusCode) ? err.statusCode :
+            isValidCode(err.status) ? err.status : 500;
 
-        return res.status(err.statusCode || 500).json({
+        logger[statusCode >= 500 ? 'error' : 'info'](
+            'Error handler middleware',
+            {err, path: req.path, errors: JSON.stringify(err.errors || {})},
+        );
+
+        return res.status(statusCode).json({
             error: {
-                statusCode: err.statusCode || 500,
+                statusCode,
                 code: err.code,
+                errors: statusCode === 400 ? err.errors : undefined,
             },
             debug: process.env.NODE_ENV === 'development' ? err : undefined,
         });

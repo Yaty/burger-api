@@ -1,6 +1,33 @@
+const _ = require('lodash');
 const {Menu} = require('../models');
-const crud = require('./utils/crud');
+const crud = require('./utils/crud')(Menu);
 
 module.exports = {
-    ...crud(Menu),
+    ...crud,
+    async updateById(id, data) {
+        const productIds = data.productIds;
+        delete data.productIds;
+
+        const instance = await crud.updateById(id, data, false);
+        if (_.isNil(instance)) return;
+
+        if (_.isArray(productIds)) {
+            await instance.products().attach(productIds);
+        }
+
+        return instance.toJSON();
+    },
+    async create(data) {
+        const productIds = data.productIds;
+        delete data.productIds;
+
+        const instance = await crud.create(data, false);
+        if (_.isNil(instance)) return;
+
+        if (_.isArray(productIds)) {
+            await instance.products().attach(productIds);
+        }
+
+        return instance.toJSON();
+    },
 };

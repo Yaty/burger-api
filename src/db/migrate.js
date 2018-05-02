@@ -1,9 +1,8 @@
-/**
- * This file is creating tables
- * It should only be called by hand
- */
+const config = require('../config');
 
 module.exports = async function(db) {
+    const {User, Role} = require('../controllers');
+
     const createTable = async (t, cb) => {
         if (await db.knex.schema.hasTable(t)) return;
         return await db.knex.schema.createTable(t, cb);
@@ -23,7 +22,9 @@ module.exports = async function(db) {
     await createOrderMenuTable();
     await createRoleMappingTable();
 
-    // TODO : init application data (create roles (admin, ...), then create admin)
+    // Init application data
+    await createRoles();
+    await createAdmin();
 
     /**
      * Create users table
@@ -61,7 +62,6 @@ module.exports = async function(db) {
         return await createTable('Menu', (t) => {
             t.increments('id').primary();
             t.string('name').unique().notNullable();
-            t.integer('price').unsigned().notNullable();
             t.timestamps();
         });
     }
@@ -150,5 +150,36 @@ module.exports = async function(db) {
             t.integer('userId').unsigned().references('User.id');
             t.timestamps();
         });
+    }
+
+    /**
+     * Create roles
+     */
+    async function createRoles() {
+        const roles = ['admin'];
+
+        for (const role of roles) {
+            const exists = await Role.exists({
+                name: role,
+            });
+
+            if (exists) continue;
+
+            await Role.create({
+                name: role,
+                created_at: new Date(),
+            });
+        }
+    }
+
+    /**
+     * Create admin
+     */
+    async function createAdmin() {
+        const adminExists = await User.exists({email: config.admin.email});
+        if (adminExists) return;
+
+        const user = await User.create(Object.assign({created_at: new Date()}, config.admin), false);
+        await user.roles().attach(user.id);
     }
 };

@@ -4,11 +4,15 @@ module.exports = function(model) {
     /**
      * Find all data from a model
      * @param {Object} where, optional
+     * @param {Number=} limit
      * @param {Boolean} json
      * @return {Array}
      */
-    async function fetchAll(where = {}, json = true) {
-        const data = await model.where(where).fetchAll();
+    async function fetchAll(where = {}, limit, json = true) {
+        const data = await model.forge().query((q) => {
+            if (_.isNumber(limit) && limit > 0) q.limit(limit);
+        }).where(where).fetchAll();
+
         return json === true ? data.toJSON() : data;
     }
 
@@ -16,13 +20,14 @@ module.exports = function(model) {
      * Find a data by it's ID
      * @param {String} id
      * @param {Boolean} json
+     * @param {Object=} options
      * @return {Object|Model}
      */
-    async function fetchById(id, json = true) {
-        const item = await model.forge({id}).fetch();
+    async function fetchById(id, json = true, options) {
+        const item = await model.forge({id}).fetch(options);
 
         if (!_.isNil(item)) {
-            return json === true ? item.toJSON() : item;
+            return json === true ? item.toJSON({omitPivot: true}) : item;
         }
 
         return undefined;
@@ -38,19 +43,36 @@ module.exports = function(model) {
     }
 
     /**
-     * Destroy by ID
+     * Destroy by ID and detach attached models
      * @param {String} id
      * @return {Boolean} destroyed
      */
     async function destroyById(id) {
         const item = await fetchById(id, false);
 
-        if (!_.isNil(item)) {
-            await item.destroy();
-            return true;
+        if (_.isNil(item)) {
+            return false;
         }
 
-        return false;
+        const relations = Object.keys(item.relationships);
+        const itemWithRelations = await fetchById(id, true, {withRelated: relations});
+
+        for (const relation of relations) {
+            const data = itemWithRelations[relation];
+
+            if (!_.isArray(data) || !_.isFunction(item[relation])) {
+                continue;
+            }
+
+            const ids = data.map((d) => d.id);
+
+            if (_.isFunction(item[relation]().detach)) {
+                await item[relation]().detach(ids);
+            }
+        }
+
+        await item.destroy();
+        return true;
     }
 
     /**
