@@ -31,3 +31,7 @@
 9. Environment variables used for configuring the API
 10. Unit tests with Mocha and Chai to test the CRUD generic controller
 11. Integration tests with Mocha, Chai and Supertest to test each route
+12. API Versioning : /api/v0/...
+13. Swagger : accessible through /api/v0/explorer
+14. ESLint
+15. Test coverage
