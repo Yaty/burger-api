@@ -12,6 +12,9 @@ module.exports = function(name) {
                 stream: bformat({outputMode: 'short'}),
             },
             {
+                type: 'rotating-file',
+                period: '1d', // daily rotation
+                count: 7, // keep 7 back copies
                 path: path.resolve(__dirname, '../burger-api.log'),
             },
         ],
