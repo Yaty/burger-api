@@ -2,7 +2,8 @@ const _ = require('lodash');
 const {expect} = require('chai');
 const config = require('../../src/config');
 const OrderCRUD = require('../../src/controllers/Order');
-const {api, buildUrl, uuid} = require('../utils');
+const UserCRUD = require('../../src/controllers/User');
+const {api, buildUrl, uuid, login} = require('../utils');
 
 const createOrder = async (userId) => {
     const order = await OrderCRUD.create({
@@ -13,10 +14,10 @@ const createOrder = async (userId) => {
     return order.id;
 };
 
-const createUser = async () => {
+const createUser = async (email, password) => {
     const user = await UserCRUD.create({
-        email: uuid() + '@qsdqsdqd.fr',
-        password: uuid(),
+        email: email || uuid() + '@qsdqsdqd.fr',
+        password: password || uuid(),
     });
 
     return user.id;
@@ -216,7 +217,12 @@ describe('Order Integrations', () => {
         });
 
         before(async () => {
-            otherUser = await createUser();
+            const credentials = {
+                password: uuid(),
+                email: uuid() + '@test.fr',
+            };
+            await createUser(credentials.email, credentials.password);
+            otherUser = await login(credentials);
         });
 
         it('should not delete', (done) => {
@@ -227,12 +233,12 @@ describe('Order Integrations', () => {
 
         it('should delete', (done) => {
             api.delete(buildUrl('/orders/' + data.id))
-                .auth(userToken, {type: 'bearer'})
+                .auth(adminToken, {type: 'bearer'})
                 .expect(204, done);
         });
 
         it('should not delete and return 404', (done) => {
-            api.delete(buildUrl('/orders/' + data.id))
+            api.delete(buildUrl('/orders/200000'))
                 .auth(adminToken, {type: 'bearer'})
                 .expect(404, done);
         });

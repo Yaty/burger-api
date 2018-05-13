@@ -11,5 +11,14 @@ module.exports = {
     buildUrl(url) {
         return BASE_URL + url;
     },
-};
+    login(credentials) {
+        return new Promise(((resolve, reject) => {
+            api.post(module.exports.buildUrl('/users/login'))
+                .send(credentials)
+                .end((err, res) => {
+                    if (err) return reject(err);
+                    resolve(res.body.id);
+                });
+        }));
+    }};
 
