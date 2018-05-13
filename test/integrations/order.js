@@ -13,6 +13,15 @@ const createOrder = async (userId) => {
     return order.id;
 };
 
+const createUser = async () => {
+    const user = await UserCRUD.create({
+        email: uuid() + '@qsdqsdqd.fr',
+        password: uuid(),
+    });
+
+    return user.id;
+};
+
 // TODO : ACL
 let adminToken;
 let userId;
@@ -199,15 +208,26 @@ describe('Order Integrations', () => {
         const data = {
             price: 50,
         };
+        let otherUser;
 
         before(async () => {
             const {id} = await OrderCRUD.create(data);
             data.id = id;
         });
 
+        before(async () => {
+            otherUser = await createUser();
+        });
+
+        it('should not delete', (done) => {
+            api.delete(buildUrl('/orders/' + data.id))
+                .auth(otherUser, {type: 'bearer'})
+                .expect(404, done);
+        });
+
         it('should delete', (done) => {
             api.delete(buildUrl('/orders/' + data.id))
-                .auth(adminToken, {type: 'bearer'})
+                .auth(userToken, {type: 'bearer'})
                 .expect(204, done);
         });
 

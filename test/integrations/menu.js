@@ -25,6 +25,7 @@ const createProduct = async () => {
 
 // TODO : ACL
 let adminToken;
+let userToken;
 
 describe('Menu Integrations', () => {
     before((done) => {
@@ -34,6 +35,25 @@ describe('Menu Integrations', () => {
                 if (err) return done(err);
                 adminToken = res.body.id;
                 done();
+            });
+    });
+
+    before((done) => {
+        const user = {
+            email: uuid() + '@' + uuid() + '.fr',
+            password: uuid(),
+        };
+        api.post(buildUrl('/users'))
+            .send(user)
+            .end((err, res) => {
+                if (err) return done(err);
+                api.post(buildUrl('/users/login'))
+                    .send(user)
+                    .end((err, res) => {
+                        if (err) return done(err);
+                        userToken = res.body.id;
+                        done();
+                    });
             });
     });
 
@@ -264,6 +284,12 @@ describe('Menu Integrations', () => {
         before(async () => {
             const {id} = await MenuCRUD.create(data);
             data.id = id;
+        });
+
+        it('should not be deleted by an user and return 401', (done) => {
+            api.delete(buildUrl('/menus/' + data.id))
+                .auth(userToken, {type: 'bearer'})
+                .expect(401, done);
         });
 
         it('should delete', (done) => {
