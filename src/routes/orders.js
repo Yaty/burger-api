@@ -35,7 +35,7 @@ crud({
 
 /**
  * @swagger
- * /users/:id/products:
+ * /orders/:id/products:
  *   get:
  *     summary: Get order products
  *     responses:
