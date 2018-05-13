@@ -73,4 +73,21 @@ module.exports = {
             },
         },
     },
+    promotions: {
+        create: {
+            body: {
+                name: Joi.string().required(),
+                value: Joi.number().required(),
+            },
+        },
+        update: {
+            body: {
+                name: Joi.string().required(),
+                value: Joi.number().required(),
+            },
+            params: {
+                id,
+            },
+        },
+    },
 };
