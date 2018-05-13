@@ -19,5 +19,13 @@ module.exports = db.Model.extend({
                 'orderId'
             );
         },
+        promotions() {
+            return this.belongsToMany(
+                require('./Promotion'),
+                'PromotionProduct',
+                'productId',
+                'promotionId'
+            );
+        },
     },
 });

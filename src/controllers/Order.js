@@ -13,23 +13,36 @@ const Menu = require('./Menu');
 async function evalPrice(productIds, menuIds) {
     let price = 0;
 
-    const getProductPrice = async (productId) => {
-        const product = await Product.fetchById(productId);
-        return product && product.price || 0;
+    const getProductPrice = async ({p, pId}) => {
+        const product = p || await Product.fetchById(pId, true, {withRelated: ['promotions']});
+        if (_.isObject(product)) {
+            if (_.isArray(product.promotions)) {
+                const reduction = product.promotions.reduce((acc, p) => {
+                    if (p.value>acc) {
+                        return p.value;
+                    }
+                    return acc;
+                }, 0 );
+                return Math.max(product.price - product.price*reduction/100, 0);
+            }
+        }
+        return 0;
     };
 
     if (_.isArray(productIds)) {
         for (const productId of productIds) {
-            price += await getProductPrice(productId);
+            price += await getProductPrice({pId: productId});
         }
     }
 
     if (_.isArray(menuIds)) {
         for (const menuId of menuIds) {
-            const menu = await Menu.fetchById(menuId, true, {withRelated: ['products']});
+            const menu = await Menu.fetchById(menuId, true, {withRelated: ['products', 'promotions']});
 
             if (!_.isNil(menu) && _.isArray(menu.products)) {
-                price += menu.products.reduce((acc, p) => acc + p.price, 0);
+               for (const product of menu.products) {
+                   price += await getProductPrice({p: product});
+               }
             }
         }
     }

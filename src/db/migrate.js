@@ -15,13 +15,15 @@ module.exports = async function(db) {
     await createOrderTable();
     await createRoleTable();
     await createAccessTokenTable();
+    await createPromotionTable();
 
     // Liaison tables
     await createProductMenuTable();
     await createOrderProductTable();
     await createOrderMenuTable();
     await createRoleMappingTable();
-
+    await createPromotionProductTable();
+    await createPromotionMenuTable();
     // Init application data
     await createRoles();
     await createAdmin();
@@ -40,7 +42,14 @@ module.exports = async function(db) {
             t.timestamps();
         });
     }
-
+    async function createPromotionTable() {
+        return await createTable('Promotion', (t) => {
+            t.increments('id').primary();
+            t.float('value').unsigned().notNullable();
+            t.string('name').notNullable();
+            t.timestamps();
+        });
+    }
     /**
      * Create products table
      * @return {Promise.<*>}
@@ -53,6 +62,7 @@ module.exports = async function(db) {
             t.timestamps();
         });
     }
+
 
     /**
      * Create menus table
@@ -139,7 +149,6 @@ module.exports = async function(db) {
             t.timestamps();
         });
     }
-
     /**
      * Create RoleMapping tale
      * @return {Promise.<*>}
@@ -151,7 +160,21 @@ module.exports = async function(db) {
             t.timestamps();
         });
     }
+    async function createPromotionProductTable() {
+        return await createTable('PromotionProduct', (t) => {
+            t.integer('promotionId').unsigned().references('Promotion.id');
+            t.integer('productId').unsigned().references('Product.id');
+            t.timestamps();
+        });
+    }
 
+    async function createPromotionMenuTable() {
+        return await createTable('PromotionMenu', (t) => {
+            t.integer('promotionId').unsigned().references('Promotion.id');
+            t.integer('menuId').unsigned().references('Menu.id');
+            t.timestamps();
+        });
+    }
     /**
      * Create roles
      */

@@ -5,4 +5,5 @@ module.exports = {
     User: require('./User'),
     Role: require('./Role'),
     AccessToken: require('./AccessToken'),
+    Promotion: require('./Promotion'),
 };
