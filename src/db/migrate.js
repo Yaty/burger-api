@@ -42,6 +42,11 @@ module.exports = async function(db) {
             t.timestamps();
         });
     }
+
+    /**
+     * Create promotions table
+     * @return {Promise.<*>}
+     */
     async function createPromotionTable() {
         return await createTable('Promotion', (t) => {
             t.increments('id').primary();
@@ -50,6 +55,7 @@ module.exports = async function(db) {
             t.timestamps();
         });
     }
+
     /**
      * Create products table
      * @return {Promise.<*>}
@@ -149,8 +155,9 @@ module.exports = async function(db) {
             t.timestamps();
         });
     }
+
     /**
-     * Create RoleMapping tale
+     * Create RoleMapping table
      * @return {Promise.<*>}
      */
     async function createRoleMappingTable() {
@@ -160,6 +167,11 @@ module.exports = async function(db) {
             t.timestamps();
         });
     }
+
+    /**
+     * Create PromotionProduct table
+     * @return {Promise.<*>}
+     */
     async function createPromotionProductTable() {
         return await createTable('PromotionProduct', (t) => {
             t.integer('promotionId').unsigned().references('Promotion.id');
@@ -168,6 +180,10 @@ module.exports = async function(db) {
         });
     }
 
+    /**
+     * Create PromotionMenu table
+     * @return {Promise.<*>}
+     */
     async function createPromotionMenuTable() {
         return await createTable('PromotionMenu', (t) => {
             t.integer('promotionId').unsigned().references('Promotion.id');
@@ -175,6 +191,7 @@ module.exports = async function(db) {
             t.timestamps();
         });
     }
+
     /**
      * Create roles
      */
