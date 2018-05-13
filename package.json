@@ -17,6 +17,7 @@
     "bunyan": "^1.8.12",
     "bunyan-format": "^0.2.1",
     "express": "~4.15.5",
+    "express-rate-limit": "^2.11.0",
     "express-validation": "^1.0.2",
     "joi": "^13.2.0",
     "knex": "^0.13.0",
