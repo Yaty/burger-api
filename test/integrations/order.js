@@ -3,11 +3,15 @@ const {expect} = require('chai');
 const config = require('../../src/config');
 const OrderCRUD = require('../../src/controllers/Order');
 const UserCRUD = require('../../src/controllers/User');
+const MenuCRUD = require('../../src/controllers/Menu');
+const ProductCRUD = require('../../src/controllers/Product');
+const PromotionCRUD = require('../../src/controllers/Promotion');
+
 const {api, buildUrl, uuid, login} = require('../utils');
 
-const createOrder = async (userId) => {
+const createOrder = async (userId, productIds = [], menuIds = []) => {
     const order = await OrderCRUD.create({
-        price: 50,
+        //price: 50,
         userId,
     });
 
@@ -21,6 +25,35 @@ const createUser = async (email, password) => {
     });
 
     return user.id;
+};
+
+const createMenu = async (productIds = [], promotionIds = []) => {
+    const menu = await MenuCRUD.create({
+        name: uuid(),
+        productIds,
+        promotionIds,
+    });
+
+    return menu.id;
+};
+
+const createProduct = async (promotionIds = []) => {
+    const product = await ProductCRUD.create({
+        name: uuid(),
+        price: 10,
+        promotionIds,
+    });
+
+    return product.id;
+};
+
+const createPromotions = async () => {
+    const promotion = await PromotionCRUD.create({
+        value: 42,
+        name: uuid(),
+    });
+
+    return promotion.id;
 };
 
 // TODO : ACL
@@ -127,16 +160,43 @@ describe('Order Integrations', () => {
 
     describe('Create', () => {
         let orderId;
+        let productId;
+        let menuId;
+        let promotionId;
+
+        before(async () => {
+            promotionId = await createPromotions();
+            productId = await createProduct([promotionId]);
+            menuId = await createMenu([productId], [promotionId]);
+        });
 
         it('should create an instance', (done) => {
             api.post(buildUrl('/orders'))
                 .auth(adminToken, {type: 'bearer'})
                 .expect(201)
-                .end(async (err, res) => {
+                .end((err, res) => {
                     if (err) return done(err);
                     expect(res.body).to.be.an('object');
                     expect(res.body).to.have.property('id');
                     expect(res.body.price).to.be.equal(0);
+                    orderId = res.body.id;
+                    done();
+                });
+        });
+
+        it('should create a order with menu, product and promotion', (done) => {
+            api.post(buildUrl('/orders'))
+                .send({
+                    productIds: [productId],
+                    menuIds: [menuId],
+                })
+                .auth(adminToken, {type: 'bearer'})
+                .expect(201)
+                .end((err, res) => {
+                    if (err) return done(err);
+                    expect(res.body).to.be.an('object');
+                    const price = 10 * 0.58 + 10 * 0.58 * 0.58;
+                    expect(res.body.price).to.be.closeTo(price, 0.001);
                     orderId = res.body.id;
                     done();
                 });
