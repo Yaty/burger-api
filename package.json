@@ -16,6 +16,7 @@
     "bookshelf-uuid": "^1.0.0",
     "bunyan": "^1.8.12",
     "bunyan-format": "^0.2.1",
+    "cors": "^2.8.4",
     "express": "~4.15.5",
     "express-rate-limit": "^2.11.0",
     "express-validation": "^1.0.2",

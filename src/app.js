@@ -1,5 +1,6 @@
 const express = require('express');
 const helmet = require('helmet');
+const cors = require('cors');
 const RateLimiter = require('express-rate-limit');
 const morgan = require('morgan');
 const bodyParser = require('body-parser');
@@ -8,6 +9,7 @@ const logger = require('./utils/logger')('app');
 
 const app = express();
 
+app.use(cors());
 app.use(helmet());
 
 app.use(new RateLimiter({
