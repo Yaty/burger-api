@@ -2,15 +2,26 @@ const _ = require('lodash');
 const {expect} = require('chai');
 const config = require('../../src/config');
 const ProductCRUD = require('../../src/controllers/Product');
+const PromotionCRUD = require('../../src/controllers/Promotion');
 const {uuid, api, buildUrl} = require('../utils');
 
-const createProduct = async () => {
+const createProduct = async (promotionIds = []) => {
     const product = await ProductCRUD.create({
         name: uuid(),
         price: 20,
+        promotionIds,
     });
 
     return product.id;
+};
+
+const createPromotions = async () => {
+    const promotion = await PromotionCRUD.create({
+        value: 42.1,
+        name: uuid(),
+    });
+
+    return promotion.id;
 };
 
 // TODO : ACL
@@ -83,10 +94,12 @@ describe('Product Integrations', () => {
     });
 
     describe('Find by ID', () => {
+        let promotionId;
         let productId;
 
         before(async () => {
-            productId = await createProduct();
+            promotionId = await createPromotions();
+            productId = await createProduct([promotionId]);
         });
 
         it('should find data by id', (done) => {
@@ -96,6 +109,31 @@ describe('Product Integrations', () => {
                 .end((err, res) => {
                     if (err) return done(err);
                     expect(res.body).to.be.an('object');
+                    done();
+                });
+        });
+
+        it('should retrieve promotions inside a product with a query', (done) => {
+            api.get(buildUrl('/products/' + productId + '?include=promotions'))
+                .expect('Content-Type', /json/)
+                .expect(200)
+                .end((err, res) => {
+                    if (err) return done(err);
+                    expect(res.body).to.have.property('promotions');
+                    expect(res.body.promotions).to.be.an('array');
+                    expect(res.body.promotions[0].id).to.be.equal(promotionId);
+                    done();
+                });
+        });
+
+        it('should retrieve promotions inside a product with a route', (done) => {
+            api.get(buildUrl('/products/' + productId + '/promotions'))
+                .expect('Content-Type', /json/)
+                .expect(200)
+                .end((err, res) => {
+                    if (err) return done(err);
+                    expect(res.body).to.be.an('array');
+                    expect(res.body[0].id).to.be.equal(promotionId);
                     done();
                 });
         });
