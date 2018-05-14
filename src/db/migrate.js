@@ -64,7 +64,7 @@ module.exports = async function(db) {
         return await createTable('Product', (t) => {
             t.increments('id').primary();
             t.string('name').unique().notNullable();
-            t.integer('price').unsigned().notNullable();
+            t.float('price').unsigned().notNullable();
             t.timestamps();
         });
     }
@@ -89,7 +89,7 @@ module.exports = async function(db) {
     async function createOrderTable() {
         return await createTable('Order', (t) => {
             t.increments('id').primary();
-            t.integer('price').unsigned().notNullable();
+            t.float('price').unsigned().notNullable();
             t.integer('userId').unsigned().references('User.id');
             t.timestamps();
         });

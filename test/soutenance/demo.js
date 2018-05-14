@@ -76,7 +76,7 @@ async function createProduct(token) {
             .auth(token, {type: 'bearer'})
             .send({
                 name: uuid(),
-                price: uuid(),
+                price: 500,
             })
             .expect(201)
             .end((err, res) => {

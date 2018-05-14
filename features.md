@@ -35,4 +35,4 @@
 13. Swagger : accessible through /api/v0/explorer
 14. ESLint
 15. Test coverage
-16. Limit, filter, where
+16. Limit, filter, include

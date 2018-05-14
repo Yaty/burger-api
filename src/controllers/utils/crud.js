@@ -10,8 +10,9 @@ module.exports = function(model) {
      */
     async function fetchAll(where = {}, limit, json = true) {
         const data = await model.forge().query((q) => {
-            if (_.isNumber(limit) && limit > 0) q.limit(limit);
-        }).where(where).fetchAll();
+            const nb = Number(limit);
+            if (_.isNumber(nb) && nb > 0) q.limit(nb);
+        }).where(_.isString(where) ? JSON.parse(where) : where).fetchAll();
 
         return json === true ? data.toJSON() : data;
     }

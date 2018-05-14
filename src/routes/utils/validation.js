@@ -77,13 +77,13 @@ module.exports = {
         create: {
             body: {
                 name: Joi.string().required(),
-                value: Joi.number().required(),
+                value: Joi.number().min(0).max(100).required(),
             },
         },
         update: {
             body: {
                 name: Joi.string(),
-                value: Joi.number(),
+                value: Joi.number().min(0).max(100),
             },
             params: {
                 id,
