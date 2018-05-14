@@ -2,6 +2,7 @@ const _ = require('lodash');
 const {expect} = require('chai');
 const config = require('../../src/config');
 const PromotionCRUD = require('../../src/controllers/Promotion');
+const MenuCRUD = require('../../src/controllers/Menu');
 const {api, buildUrl, uuid} = require('../utils');
 
 const createPromotion = async () => {
@@ -93,8 +94,8 @@ describe('Promotion Integrations', () => {
                 .end((err, res) => {
                     if (err) return done(err);
                     expect(res.body).to.be.an('object');
-                    expect(res.body).to.not.have.property('name');
-                    expect(res.body).to.not.have.property('value');
+                    expect(res.body).to.have.property('name');
+                    expect(res.body).to.have.property('value');
                     done();
                 });
         });
@@ -199,6 +200,7 @@ describe('Promotion Integrations', () => {
                     .auth(adminToken, {type: 'bearer'})
                     .send({
                         name,
+                        value,
                     })
                     .expect(200)
                     .end((err, res) => {

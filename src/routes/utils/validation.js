@@ -82,8 +82,8 @@ module.exports = {
         },
         update: {
             body: {
-                name: Joi.string().required(),
-                value: Joi.number().required(),
+                name: Joi.string(),
+                value: Joi.number(),
             },
             params: {
                 id,
