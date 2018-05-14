@@ -14,7 +14,7 @@ async function evalPrice(productIds, menuIds) {
     let price = 0;
 
     const getBestReduction = (promotions = []) => promotions.reduce((maxPromo, p) => p.value > maxPromo ? p.value : maxPromo, 0);
-    const affectPromotion = (price, promotion) => Math.max(price - price * promotion / 100, 0);
+    const affectPromotion = (price, promotion) => Math.max(price - price * (promotion / 100), 0);
 
     const getProductPrice = async ({p, pId}) => {
         const product = p || await Product.fetchById(pId, true, {withRelated: ['promotions']});
