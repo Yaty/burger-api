@@ -2,6 +2,7 @@ const menus = require('./menus');
 const orders = require('./orders');
 const products = require('./products');
 const users = require('./users');
+const promotions = require('./promotions');
 const express = require('express');
 const {error, locals} = require('./middlewares');
 const router = new express.Router();
@@ -40,6 +41,7 @@ router.use('/menus', menus);
 router.use('/orders', orders);
 router.use('/products', products);
 router.use('/users', users);
+router.use('/promotions', promotions);
 
 if (process.env.NODE_ENV === 'development') {
     const packageJson = require('../../package.json');

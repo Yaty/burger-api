@@ -133,7 +133,7 @@ describe('Soutenance', () => {
         await createProduct(adminToken);
     });
 
-    it('should not create a product', async () => {
+    it('should not create a product if not an admin', async () => {
         try {
             await createProduct();
         } catch (err) {
@@ -186,7 +186,7 @@ describe('Soutenance', () => {
         createProducts(5, adminToken)
             .then((productIds) => createMenu(productIds, adminToken))
             .then((menuId) => {
-                api.get(buildUrl('/menus/' + menuId))
+                api.get(buildUrl('/menus/' + menuId + '?include=products'))
                     .auth(adminToken, {type: 'bearer'})
                     .expect(200)
                     .end((err, res) => {
