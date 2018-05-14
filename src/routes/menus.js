@@ -41,14 +41,14 @@ crud({
  *       200:
  *         description: Products
  *       404:
- *         description: No products
+ *         description: Unknown menu
  */
 router.get('/:id/products', validate(validations.mandatoryId), auth.ifAnyone, async (req, res, next) => {
     try {
         const menu = await Menu.fetchById(req.params.id, true, {withRelated: 'products'});
 
-        if (menu && menu.products) {
-            return res.json(menu.products);
+        if (menu) {
+            return res.json(menu.products || []);
         }
 
         return res.sendStatus(404);

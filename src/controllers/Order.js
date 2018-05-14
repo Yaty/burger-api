@@ -15,17 +15,17 @@ async function evalPrice(productIds, menuIds) {
 
     const getProductPrice = async ({p, pId}) => {
         const product = p || await Product.fetchById(pId, true, {withRelated: ['promotions']});
+
         if (_.isObject(product)) {
             if (_.isArray(product.promotions)) {
-                const reduction = product.promotions.reduce((acc, p) => {
-                    if (p.value>acc) {
-                        return p.value;
-                    }
-                    return acc;
-                }, 0 );
-                return Math.max(product.price - product.price*reduction/100, 0);
+                const reduction = product.promotions
+                    .reduce((maxPromo, p) => p.value > maxPromo ? p.value : maxPromo, 0);
+                return Math.max(product.price - product.price * reduction / 100, 0);
             }
+
+            return product.price;
         }
+
         return 0;
     };
 

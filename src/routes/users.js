@@ -103,14 +103,14 @@ router.post('/logout', auth.ifAuthenticated, async (req, res, next) => {
  *       200:
  *         description: Orders
  *       404:
- *         description: No orders
+ *         description: User not found
  */
 router.get('/:id/orders', validate(validations.mandatoryId), auth.ifOwner(User), async (req, res, next) => {
     try {
-        const user = await User.fetchById(req.params.id);
+        const user = await User.fetchById(req.params.id, true, {withRelated: ['orders']});
 
-        if (user && user.orders) {
-            return res.json(user.orders);
+        if (user) {
+            return res.json(user.orders || []);
         }
 
         return res.sendStatus(404);

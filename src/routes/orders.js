@@ -42,14 +42,14 @@ crud({
  *       200:
  *         description: Products
  *       404:
- *         description: No products
+ *         description: Unknown order
  */
 router.get('/:id/products', validate(validations.mandatoryId), auth.ifOwner(Order), async (req, res, next) => {
     try {
         const order = await Order.fetchById(req.params.id, true, {withRelated: ['products']});
 
-        if (order && order.products) {
-            return res.json(order.products);
+        if (order) {
+            return res.json(order.products || []);
         }
 
         return res.sendStatus(404);
@@ -67,14 +67,14 @@ router.get('/:id/products', validate(validations.mandatoryId), auth.ifOwner(Orde
  *       200:
  *         description: Menus
  *       404:
- *         description: No menus
+ *         description: Unknown order
  */
 router.get('/:id/menus', validate(validations.mandatoryId), auth.ifOwner(Order), async (req, res, next) => {
     try {
         const order = await Order.fetchById(req.params.id, true, {withRelated: ['menus']});
 
-        if (order && order.menus) {
-            return res.json(order.menus);
+        if (order) {
+            return res.json(order.menus || []);
         }
 
         return res.sendStatus(404);
