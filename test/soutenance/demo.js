@@ -13,7 +13,7 @@
  */
 
 const {api, buildUrl, uuid} = require('../utils');
-const logger = require('../../src/utils/logger')('SOUTENANCE');
+// const logger = require('../../src/utils/logger')('SOUTENANCE');
 
 /**
  * Log
@@ -22,7 +22,7 @@ const logger = require('../../src/utils/logger')('SOUTENANCE');
  * @param {Object} args
  */
 function log(msg, res, ...args) {
-    logger.warn(msg, {body: res.body, statusCode: res.statusCode, errors: JSON.stringify(res.body.error && res.body.error.errors || {}), args});
+    // logger.warn(msg, {body: res.body, statusCode: res.statusCode, errors: JSON.stringify(res.body.error && res.body.error.errors || {}), args});
 }
 
 /**
