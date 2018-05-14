@@ -5,6 +5,7 @@ const router = new express.Router();
 const crud = require('./utils/crud');
 const auth = require('./middlewares/auth');
 const validations = require('./utils/validation');
+const validate = require('express-validation');
 
 const options = {
     validations: {
@@ -29,6 +30,31 @@ crud({
     model: Product,
     logger,
     ...options,
+});
+
+/**
+ * @swagger
+ * /products/:id/promotions:
+ *   get:
+ *     summary: Get product promotions
+ *     responses:
+ *       200:
+ *         description: Promotions
+ *       404:
+ *         description: Unknown product
+ */
+router.get('/:id/promotions', validate(validations.mandatoryId), auth.ifAnyone, async (req, res, next) => {
+    try {
+        const product = await Product.fetchById(req.params.id, true, {withRelated: 'promotions'});
+
+        if (product) {
+            return res.json(product.promotions || []);
+        }
+
+        return res.sendStatus(404);
+    } catch (err) {
+        next(err);
+    }
 });
 
 module.exports = router;

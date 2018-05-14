@@ -57,4 +57,29 @@ router.get('/:id/products', validate(validations.mandatoryId), auth.ifAnyone, as
     }
 });
 
+/**
+ * @swagger
+ * /menus/:id/promotions:
+ *   get:
+ *     summary: Get menu promotions
+ *     responses:
+ *       200:
+ *         description: Products
+ *       404:
+ *         description: Unknown menu
+ */
+router.get('/:id/promotions', validate(validations.mandatoryId), auth.ifAnyone, async (req, res, next) => {
+    try {
+        const menu = await Menu.fetchById(req.params.id, true, {withRelated: 'promotions'});
+
+        if (menu) {
+            return res.json(menu.promotions || []);
+        }
+
+        return res.sendStatus(404);
+    } catch (err) {
+        next(err);
+    }
+});
+
 module.exports = router;

@@ -151,7 +151,7 @@ describe('Menu Integrations', () => {
         });
 
         it('should retrieve promotions inside a menu with a query', (done) => {
-            api.get(buildUrl('/menus/' + promotionId + '?include=promotions'))
+            api.get(buildUrl('/menus/' + menuId + '?include=promotions'))
                 .expect('Content-Type', /json/)
                 .expect(200)
                 .end((err, res) => {

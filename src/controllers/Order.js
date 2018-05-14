@@ -13,14 +13,16 @@ const Menu = require('./Menu');
 async function evalPrice(productIds, menuIds) {
     let price = 0;
 
+    const getBestReduction = (promotions = []) => promotions.reduce((maxPromo, p) => p.value > maxPromo ? p.value : maxPromo, 0);
+    const affectPromotion = (price, promotion) => Math.max(price - price * promotion / 100, 0);
+
     const getProductPrice = async ({p, pId}) => {
         const product = p || await Product.fetchById(pId, true, {withRelated: ['promotions']});
 
         if (_.isObject(product)) {
             if (_.isArray(product.promotions)) {
-                const reduction = product.promotions
-                    .reduce((maxPromo, p) => p.value > maxPromo ? p.value : maxPromo, 0);
-                return Math.max(product.price - product.price * reduction / 100, 0);
+                const reduction = getBestReduction(product.promotions);
+                return affectPromotion(product.price, reduction);
             }
 
             return product.price;
@@ -37,13 +39,18 @@ async function evalPrice(productIds, menuIds) {
 
     if (_.isArray(menuIds)) {
         for (const menuId of menuIds) {
-            const menu = await Menu.fetchById(menuId, true, {withRelated: ['products', 'promotions']});
+            let menuPrice = 0;
+            const menu = await Menu.fetchById(menuId, true, {withRelated: ['products.promotions', 'promotions']});
 
             if (!_.isNil(menu) && _.isArray(menu.products)) {
                for (const product of menu.products) {
-                   price += await getProductPrice({p: product});
+                   const reduction = getBestReduction(product.promotions);
+                   menuPrice += affectPromotion(product.price, reduction);
                }
             }
+
+            const reduction = getBestReduction(menu.promotions);
+            price += affectPromotion(menuPrice, reduction);
         }
     }
 
