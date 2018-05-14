@@ -3,12 +3,14 @@ const {expect} = require('chai');
 const config = require('../../src/config');
 const MenuCRUD = require('../../src/controllers/Menu');
 const ProductCRUD = require('../../src/controllers/Product');
+const PromotionCRUD = require('../../src/controllers/Promotion');
 const {uuid, api, buildUrl} = require('../utils');
 
-const createMenu = async (productIds = []) => {
+const createMenu = async (productIds = [], promotionIds = []) => {
     const menu = await MenuCRUD.create({
         name: uuid(),
         productIds,
+        promotionIds,
     });
 
     return menu.id;
@@ -21,6 +23,15 @@ const createProduct = async () => {
     });
 
     return product.id;
+};
+
+const createPromotions = async () => {
+    const promotion = await PromotionCRUD.create({
+        value: 42,
+        name: uuid(),
+    });
+
+    return promotion.id;
 };
 
 // TODO : ACL
@@ -94,10 +105,12 @@ describe('Menu Integrations', () => {
     describe('Find by ID', () => {
         let menuId;
         let productId;
+        let promotionId;
 
         before(async () => {
             productId = await createProduct();
-            menuId = await createMenu([productId]);
+            promotionId = await createPromotions();
+            menuId = await createMenu([productId], [promotionId]);
         });
 
         it('should find data by id', (done) => {
@@ -133,6 +146,31 @@ describe('Menu Integrations', () => {
                     if (err) return done(err);
                     expect(res.body).to.be.an('array');
                     expect(res.body[0].id).to.be.equal(productId);
+                    done();
+                });
+        });
+
+        it('should retrieve promotions inside a menu with a query', (done) => {
+            api.get(buildUrl('/menus/' + promotionId + '?include=promotions'))
+                .expect('Content-Type', /json/)
+                .expect(200)
+                .end((err, res) => {
+                    if (err) return done(err);
+                    expect(res.body).to.have.property('promotions');
+                    expect(res.body.promotions).to.be.an('array');
+                    expect(res.body.promotions[0].id).to.be.equal(promotionId);
+                    done();
+                });
+        });
+
+        it('should retrieve promotions inside a menu with a route', (done) => {
+            api.get(buildUrl('/menus/' + menuId + '/promotions'))
+                .expect('Content-Type', /json/)
+                .expect(200)
+                .end((err, res) => {
+                    if (err) return done(err);
+                    expect(res.body).to.be.an('array');
+                    expect(res.body[0].id).to.be.equal(promotionId);
                     done();
                 });
         });
